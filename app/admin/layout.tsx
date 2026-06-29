@@ -28,14 +28,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
+    // Wait until auth is fully loaded before making any decision
     if (!initialized) return;
-    if (!user) {
-      toast.error('Please log in to access the admin panel');
-      router.replace('/auth/login');
-    } else if (!isAdmin()) {
-      toast.error('Access denied — admin only');
-      router.replace('/');
-    }
+    // Small delay to ensure role is loaded from Firestore
+    const timer = setTimeout(() => {
+      if (!user) {
+        toast.error('Please log in to access the admin panel');
+        router.replace('/auth/login');
+      } else if (!isAdmin()) {
+        toast.error('Access denied — admin only');
+        router.replace('/');
+      }
+    }, 500);
+    return () => clearTimeout(timer);
   }, [user, initialized, isAdmin, router]);
 
   const handleSignOut = async () => {
