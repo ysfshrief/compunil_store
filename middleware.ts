@@ -1,34 +1,21 @@
 // ============================================================
-// COMPUNIL — Server-side Route Protection Middleware
-// Runs on the Edge before every /admin request.
-// The __compunil_admin cookie is set by useAuth after
-// Firebase confirms the user's role from Firestore.
-// Firestore security rules provide the real data-layer guard.
+// COMPUNIL — Middleware
+// Admin routes are protected client-side via app/admin/layout.tsx
+// and at the data layer via Firestore security rules.
+// The cookie-based approach caused race conditions with async
+// role fetching, so we rely on the more reliable client guard.
 // ============================================================
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const ADMIN_COOKIE = '__compunil_admin'
-
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
-  if (pathname.startsWith('/admin')) {
-    const cookie = request.cookies.get(ADMIN_COOKIE)
-    const hasAccess = cookie?.value === 'granted'
-
-    if (!hasAccess) {
-      const loginUrl = new URL('/auth/login', request.url)
-      loginUrl.searchParams.set('redirect', pathname)
-      return NextResponse.redirect(loginUrl)
-    }
-  }
-
+  // Pass all requests through — admin protection handled client-side
   return NextResponse.next()
 }
 
 export const config = {
-  // Only run middleware on /admin routes
+  // Only run on admin routes (does nothing, but keeps the matcher
+  // in place so it's easy to re-enable server-side protection later)
   matcher: ['/admin/:path*'],
 }
