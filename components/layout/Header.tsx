@@ -205,10 +205,11 @@ export default function Header() {
                           <FiSettings size={15} /> Account Settings
                         </Link>
                         {isAdmin() && (
-                          <Link href="/admin" onClick={() => setUserMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 text-brand-navy font-medium">
+                          <button
+                            onClick={() => { setUserMenuOpen(false); router.push('/admin') }}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 text-brand-navy font-medium">
                             <FiSettings size={15} /> Admin Panel
-                          </Link>
+                          </button>
                         )}
                         <button
                           onClick={handleSignOut}
