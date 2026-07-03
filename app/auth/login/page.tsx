@@ -38,9 +38,18 @@ function LoginForm() {
       toast.success('Welcome back!')
       router.push(redirectTo)
     } catch (err: any) {
-      const msg = err.code === 'auth/invalid-credential'
-        ? 'Invalid email or password'
-        : 'Login failed. Please try again.'
+      const code = err?.code ?? ''
+      let msg = 'Login failed. Please try again.'
+      if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found')
+        msg = 'Invalid email or password'
+      else if (code === 'auth/invalid-email')
+        msg = 'Please enter a valid email address'
+      else if (code === 'auth/too-many-requests')
+        msg = 'Too many attempts. Please wait a moment and try again.'
+      else if (code === 'auth/network-request-failed')
+        msg = 'Network error. Check your connection.'
+      else if (code === 'auth/user-disabled')
+        msg = 'This account has been disabled.'
       toast.error(msg)
     } finally {
       setLoading(false)
@@ -53,8 +62,17 @@ function LoginForm() {
       await loginWithGoogle()
       toast.success('Welcome!')
       router.push(redirectTo)
-    } catch {
-      toast.error('Google login failed')
+    } catch (err: any) {
+      const code = err?.code ?? ''
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        // User closed the popup — no error needed
+      } else if (code === 'auth/popup-blocked') {
+        toast.error('Popup blocked. Please allow popups and try again.')
+      } else if (code === 'auth/unauthorized-domain') {
+        toast.error('This domain is not authorized for Google sign-in.')
+      } else {
+        toast.error('Google login failed. Please try again.')
+      }
     } finally {
       setGoogleLoading(false)
     }
