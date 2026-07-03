@@ -19,8 +19,9 @@ import { useLangStore }     from '../../../store/langStore'
 import ProductGrid from '../../../components/ui/ProductGrid'
 import StarRating  from '../../../components/ui/StarRating'
 import { MOCK_PRODUCTS }   from '../../../lib/mockData'
+import { getProductById, getProductsByCategory, getProductReviews } from '../../../lib/firestore'
 import { formatEGP, discountPct, formatDate, cn } from '../../../lib/utils'
-import type { Product } from '../../../types'
+import type { Product, Review } from '../../../types'
 import toast from 'react-hot-toast'
 
 export default function ProductPage() {
@@ -34,20 +35,45 @@ export default function ProductPage() {
   const [activeImg, setActiveImg] = useState(0)
   const [qty, setQty]           = useState(1)
   const [activeTab, setActiveTab] = useState<'specs' | 'reviews' | 'desc'>('desc')
+  const [reviews, setReviews]   = useState<Review[]>([])
 
   const addItem  = useCartStore(s => s.addItem)
   const openCart = useCartStore(s => s.openCart)
   const { toggle: toggleWish, has } = useWishlistStore()
 
   useEffect(() => {
-    setLoading(true)
-    // In production: getProductById(id) from Firestore
-    const found = MOCK_PRODUCTS.find(p => p.id === id)
-    if (found) {
-      setProduct(found)
-      setRelated(MOCK_PRODUCTS.filter(p => p.categoryId === found.categoryId && p.id !== id).slice(0, 4))
+    async function loadProduct() {
+      setLoading(true)
+      try {
+        // Try Firestore first
+        const found = await getProductById(id)
+        if (found) {
+          setProduct(found)
+          const [rel, revs] = await Promise.all([
+            getProductsByCategory(found.categoryId, 5),
+            getProductReviews(id).catch(() => []),
+          ])
+          setRelated(rel.filter(p => p.id !== id).slice(0, 4))
+          setReviews(revs)
+        } else {
+          // Fall back to mock data
+          const mock = MOCK_PRODUCTS.find(p => p.id === id)
+          if (mock) {
+            setProduct(mock)
+            setRelated(MOCK_PRODUCTS.filter(p => p.categoryId === mock.categoryId && p.id !== id).slice(0, 4))
+          }
+        }
+      } catch {
+        const mock = MOCK_PRODUCTS.find(p => p.id === id)
+        if (mock) {
+          setProduct(mock)
+          setRelated(MOCK_PRODUCTS.filter(p => p.categoryId === mock.categoryId && p.id !== id).slice(0, 4))
+        }
+      } finally {
+        setLoading(false)
+      }
     }
-    setLoading(false)
+    loadProduct()
   }, [id])
 
   if (loading) {
@@ -102,6 +128,9 @@ export default function ProductPage() {
     { id: '2', userName: 'Sarah K.', rating: 4, comment: 'Great value for money. Delivery was fast. Minor packaging issue but product is perfect.', createdAt: new Date('2024-03-01'), helpful: 8 },
     { id: '3', userName: 'Omar H.', rating: 5, comment: 'Best purchase I have made this year. Works exactly as described.', createdAt: new Date('2024-02-20'), helpful: 5 },
   ]
+
+  // Show real reviews from Firestore when present, otherwise sample reviews
+  const displayReviews = reviews.length ? reviews : mockReviews
 
   return (
     <div className="bg-gray-50 min-h-screen pb-10">
@@ -342,7 +371,7 @@ export default function ProductPage() {
                 </div>
 
                 {/* Review list */}
-                {mockReviews.map(review => (
+                {displayReviews.map(review => (
                   <div key={review.id} className="border-b border-brand-border pb-4 last:border-0">
                     <div className="flex items-start justify-between mb-2">
                       <div>
