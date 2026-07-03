@@ -10,9 +10,10 @@ import { FiFilter, FiX, FiChevronDown, FiChevronUp } from 'react-icons/fi'
 import ProductGrid  from '../../components/ui/ProductGrid'
 import SectionHeader from '../../components/ui/SectionHeader'
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../../lib/mockData'
+import { getAllProducts, getCategories } from '../../lib/firestore'
 import { useLangStore } from '../../store/langStore'
 import { formatEGP, cn } from '../../lib/utils'
-import type { Product, ProductFilters } from '../../types'
+import type { Product, ProductFilters, Category } from '../../types'
 
 const SORT_OPTIONS = [
   { value: 'newest',     label: 'Newest First' },
@@ -41,18 +42,27 @@ export default function ShopPage() {
     search:   params.get('search')   ?? undefined,
     sortBy:   'newest',
   })
+  const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES)
   const [priceRange, setPriceRange] = useState([0, 100000])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [minRating, setMinRating]   = useState(0)
 
-  // Load products
+  // Load products + categories from Firestore (fall back to mock if empty)
   useEffect(() => {
-    setLoading(true)
-    // In production, use getProducts() from firestore
-    setTimeout(() => {
-      setProducts(MOCK_PRODUCTS)
-      setLoading(false)
-    }, 400)
+    async function loadData() {
+      setLoading(true)
+      try {
+        const [prods, cats] = await Promise.all([getAllProducts(), getCategories()])
+        setProducts(prods.length ? prods : MOCK_PRODUCTS)
+        setCategories(cats.length ? cats : MOCK_CATEGORIES)
+      } catch {
+        setProducts(MOCK_PRODUCTS)
+        setCategories(MOCK_CATEGORIES)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
   }, [])
 
   // Update filters from URL params
@@ -130,7 +140,7 @@ export default function ShopPage() {
   const hasActiveFilters = filters.category || filters.search || selectedBrands.length > 0 || minRating > 0
 
   const pageTitle = filters.category
-    ? MOCK_CATEGORIES.find(c => c.id === filters.category)?.name ?? 'Products'
+    ? categories.find(c => c.id === filters.category)?.name ?? 'Products'
     : filters.search
     ? `Results for "${filters.search}"`
     : 'All Products'
@@ -169,7 +179,7 @@ export default function ShopPage() {
               />
               <span className="text-sm text-gray-600">All Categories</span>
             </label>
-            {MOCK_CATEGORIES.map(cat => (
+            {categories.map(cat => (
               <label key={cat.id} className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
