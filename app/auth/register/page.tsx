@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiArrowLeft } from 'react-icons/fi';
@@ -25,10 +25,10 @@ export default function RegisterPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  if (user) {
-    router.replace('/');
-    return null;
-  }
+  // Redirect away if already logged in (in an effect, not during render)
+  useEffect(() => {
+    if (user) router.replace('/');
+  }, [user, router]);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -53,10 +53,19 @@ export default function RegisterPage() {
       toast.success('Account created! Welcome to Compunil 🎉');
       router.push('/');
     } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
-        setErrors({ email: 'Email is already registered' });
+      const code = err?.code ?? '';
+      if (code === 'auth/email-already-in-use') {
+        setErrors({ email: 'This email is already registered. Try signing in instead.' });
+      } else if (code === 'auth/invalid-email') {
+        setErrors({ email: 'Please enter a valid email address' });
+      } else if (code === 'auth/weak-password') {
+        setErrors({ password: 'Password is too weak (min 6 characters)' });
+      } else if (code === 'auth/network-request-failed') {
+        toast.error('Network error. Check your connection and try again.');
+      } else if (code === 'auth/operation-not-allowed') {
+        toast.error('Email/password sign-up is not enabled. Contact support.');
       } else {
-        toast.error(err.message || 'Registration failed');
+        toast.error(err?.message || 'Registration failed. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -70,7 +79,16 @@ export default function RegisterPage() {
       toast.success('Welcome to Compunil!');
       router.push('/');
     } catch (err: any) {
-      toast.error(err.message || 'Google sign-in failed');
+      const code = err?.code ?? '';
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        // User closed the popup — silent
+      } else if (code === 'auth/popup-blocked') {
+        toast.error('Popup blocked. Please allow popups and try again.');
+      } else if (code === 'auth/unauthorized-domain') {
+        toast.error('This domain is not authorized for Google sign-in.');
+      } else {
+        toast.error('Google sign-in failed. Please try again.');
+      }
     } finally {
       setGoogleLoading(false);
     }
