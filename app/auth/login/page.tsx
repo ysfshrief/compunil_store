@@ -3,9 +3,9 @@
 // COMPUNIL — Login Page
 // ============================================================
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
 import { FcGoogle } from 'react-icons/fc'
@@ -14,8 +14,10 @@ import Input  from '../../../components/ui/Input'
 import Button from '../../../components/ui/Button'
 import toast from 'react-hot-toast'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/'
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw]     = useState(false)
@@ -34,7 +36,7 @@ export default function LoginPage() {
     try {
       await loginWithEmail(email, password)
       toast.success('Welcome back!')
-      router.push('/')
+      router.push(redirectTo)
     } catch (err: any) {
       const msg = err.code === 'auth/invalid-credential'
         ? 'Invalid email or password'
@@ -50,7 +52,7 @@ export default function LoginPage() {
     try {
       await loginWithGoogle()
       toast.success('Welcome!')
-      router.push('/')
+      router.push(redirectTo)
     } catch {
       toast.error('Google login failed')
     } finally {
@@ -143,5 +145,17 @@ export default function LoginPage() {
         </div>
       </motion.div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-2 border-brand-teal border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
