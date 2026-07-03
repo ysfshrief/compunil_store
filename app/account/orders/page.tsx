@@ -12,58 +12,6 @@ import { signOut } from '@/lib/auth';
 import type { Order } from '@/types';
 import toast from 'react-hot-toast';
 
-const MOCK_USER_ORDERS: Order[] = [
-  {
-    id: 'ORD-2024-001',
-    userId: 'u1',
-    userEmail: 'customer@example.com',
-    userName: 'Customer',
-    subtotal: 0,
-    shipping: 0,
-    phone: '01000000000',
-    items: [
-      { productId: 'p1', productName: 'RTX 4080 Super 16GB', productImage: '', price: 42000, quantity: 1, subtotal: 42000 },
-    ],
-    total: 42000,
-    status: 'delivered',
-    createdAt: new Date('2024-11-01'),
-    address: { id: '1', label: 'Delivery', street: '15 Tahrir St', city: 'Cairo', governorate: 'Cairo', isDefault: true },
-  },
-  {
-    id: 'ORD-2024-003',
-    userId: 'u1',
-    userEmail: 'customer@example.com',
-    userName: 'Customer',
-    subtotal: 0,
-    shipping: 0,
-    phone: '01000000000',
-    items: [
-      { productId: 'p3', productName: 'Corsair Vengeance 32GB DDR5', productImage: '', price: 4800, quantity: 2, subtotal: 9600 },
-      { productId: 'p4', productName: 'Logitech G Pro X Keyboard', productImage: '', price: 3200, quantity: 1, subtotal: 3200 },
-    ],
-    total: 12800,
-    status: 'shipped',
-    createdAt: new Date('2024-11-10'),
-    address: { id: '1', label: 'Delivery', street: '15 Tahrir St', city: 'Cairo', governorate: 'Cairo', isDefault: true },
-  },
-  {
-    id: 'ORD-2024-005',
-    userId: 'u1',
-    userEmail: 'customer@example.com',
-    userName: 'Customer',
-    subtotal: 0,
-    shipping: 0,
-    phone: '01000000000',
-    items: [
-      { productId: 'p6', productName: 'TP-Link AX6000 Wi-Fi 6 Router', productImage: '', price: 8900, quantity: 1, subtotal: 8900 },
-    ],
-    total: 8900,
-    status: 'processing',
-    createdAt: new Date('2024-11-13'),
-    address: { id: '1', label: 'Delivery', street: '15 Tahrir St', city: 'Cairo', governorate: 'Cairo', isDefault: true },
-  },
-];
-
 const STATUS_STEPS = ['pending', 'processing', 'shipped', 'delivered'];
 
 function OrderStatusTracker({ status }: { status: string }) {
@@ -215,9 +163,10 @@ export default function AccountOrdersPage() {
     const load = async () => {
       try {
         const data = await getOrdersByUser(userId);
-        setOrders(data.length ? data : MOCK_USER_ORDERS);
-      } catch {
-        setOrders(MOCK_USER_ORDERS);
+        setOrders(data);
+      } catch (err) {
+        console.error('[Compunil] Failed to load orders:', err);
+        setOrders([]);
       } finally {
         setLoading(false);
       }
