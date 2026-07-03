@@ -68,7 +68,20 @@ export function statusColor(status: string): string {
   return map[status] ?? 'bg-gray-100 text-gray-800'
 }
 
-/** Generate placeholder product image */
+/** Generate placeholder product image — uses an inline SVG so it
+ *  never triggers a network request and cannot cause retry loops. */
 export function productPlaceholder(name: string): string {
-  return `https://via.placeholder.com/400x300/1B3A7A/FFFFFF?text=${encodeURIComponent(name)}`
+  const initials = name
+    .split(' ')
+    .slice(0, 2)
+    .map(w => w[0]?.toUpperCase() ?? '')
+    .join('')
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+    <rect width="400" height="300" fill="#EEF2FF"/>
+    <rect x="160" y="90" width="80" height="60" rx="8" fill="#CBD5E1"/>
+    <rect x="150" y="155" width="100" height="8" rx="4" fill="#CBD5E1"/>
+    <rect x="170" y="170" width="60" height="6" rx="3" fill="#E2E8F0"/>
+    <text x="200" y="220" text-anchor="middle" font-family="system-ui,sans-serif" font-size="24" font-weight="700" fill="#94A3B8">${initials}</text>
+  </svg>`
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 }
