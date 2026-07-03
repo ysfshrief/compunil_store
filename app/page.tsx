@@ -11,7 +11,8 @@ import { FiArrowRight, FiTruck, FiShield, FiHeadphones, FiRefreshCw } from 'reac
 import ProductGrid  from '../components/ui/ProductGrid'
 import SectionHeader from '../components/ui/SectionHeader'
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../lib/mockData'
-import type { Product } from '../types'
+import { getFeaturedProducts, getProducts, getCategories } from '../lib/firestore'
+import type { Product, Category } from '../types'
 
 const HERO_SLIDES = [
   {
@@ -51,13 +52,34 @@ export default function HomePage() {
   const [slide, setSlide]         = useState(0)
   const [featured, setFeatured]   = useState<Product[]>([])
   const [deals, setDeals]         = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading]     = useState(true)
 
   useEffect(() => {
-    // In production, fetch from Firestore; use mock data for demo
-    setFeatured(MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 8))
-    setDeals(MOCK_PRODUCTS.filter(p => p.isOnSale).slice(0, 4))
-    setLoading(false)
+    // Fetch from Firestore; fall back to mock data if the store is empty
+    // (e.g. before the admin has added real products).
+    async function loadData() {
+      try {
+        const [feat, saleRes, cats] = await Promise.all([
+          getFeaturedProducts(8),
+          getProducts({ sortBy: 'newest' }, 20),
+          getCategories(),
+        ])
+        const onSale = saleRes.products.filter(p => p.isOnSale).slice(0, 4)
+
+        setFeatured(feat.length ? feat : MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 8))
+        setDeals(onSale.length ? onSale : MOCK_PRODUCTS.filter(p => p.isOnSale).slice(0, 4))
+        setCategories(cats.length ? cats : MOCK_CATEGORIES)
+      } catch {
+        // Firestore unavailable — use mock data
+        setFeatured(MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 8))
+        setDeals(MOCK_PRODUCTS.filter(p => p.isOnSale).slice(0, 4))
+        setCategories(MOCK_CATEGORIES)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
   }, [])
 
   // Auto-advance hero
@@ -162,7 +184,7 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 py-10">
         <SectionHeader title="Shop by Category" href="/shop" />
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-          {MOCK_CATEGORIES.map(cat => (
+          {categories.map(cat => (
             <Link
               key={cat.id}
               href={`/shop?category=${cat.id}`}
