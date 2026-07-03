@@ -44,13 +44,20 @@ export async function registerWithEmail(
   const cred = await createUserWithEmailAndPassword(auth, email, password)
   await updateProfile(cred.user, { displayName: name })
 
-  await setDoc(doc(db, 'users', cred.user.uid), {
-    id:        cred.user.uid,
-    name,
-    email,
-    role:      'user' as UserRole,
-    createdAt: serverTimestamp(),
-  })
+  // Write the user profile to Firestore. If this fails (e.g. rules not
+  // published yet), we still keep the auth account — the profile is
+  // re-created on next login via getOrCreateUser.
+  try {
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      id:        cred.user.uid,
+      name,
+      email:     email.toLowerCase().trim(),
+      role:      'user' as UserRole,
+      createdAt: serverTimestamp(),
+    })
+  } catch (err) {
+    console.warn('[Compunil] Could not write user profile to Firestore:', err)
+  }
 
   return cred.user
 }
@@ -62,8 +69,29 @@ export async function loginWithEmail(
 ): Promise<FirebaseUser> {
   if (!auth) throw new Error('[Compunil] Firebase Auth not initialized.')
   const cred = await signInWithEmailAndPassword(auth, email, password)
+  // Ensure the Firestore profile exists (self-heal accounts missing a doc)
+  await ensureUserDoc(cred.user)
   await recordLogin(cred.user, 'email')
   return cred.user
+}
+
+// ── Ensure a user document exists in Firestore ───────────────
+async function ensureUserDoc(user: FirebaseUser): Promise<void> {
+  try {
+    const ref  = doc(db, 'users', user.uid)
+    const snap = await getDoc(ref)
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        id:        user.uid,
+        name:      user.displayName ?? 'User',
+        email:     (user.email ?? '').toLowerCase().trim(),
+        role:      'user' as UserRole,
+        createdAt: serverTimestamp(),
+      })
+    }
+  } catch (err) {
+    console.warn('[Compunil] Could not ensure user doc:', err)
+  }
 }
 
 // ── Google Login ─────────────────────────────────────────────
@@ -78,7 +106,7 @@ export async function loginWithGoogle(): Promise<FirebaseUser> {
     await setDoc(userRef, {
       id:        user.uid,
       name:      user.displayName ?? 'User',
-      email:     user.email,
+      email:     (user.email ?? '').toLowerCase().trim(),
       role:      'user' as UserRole,
       photoURL:  user.photoURL,
       createdAt: serverTimestamp(),
