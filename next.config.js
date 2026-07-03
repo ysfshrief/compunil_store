@@ -16,6 +16,10 @@ const nextConfig = {
       },
     ],
     formats: ['image/avif', 'image/webp'],
+    // Bypass the Next.js image optimizer for external images.
+    // The optimizer returns 404 for some external hosts on Vercel's
+    // hobby tier; serving them directly is more reliable.
+    unoptimized: true,
   },
   experimental: {
     optimizePackageImports: ['framer-motion', 'react-icons'],
