@@ -26,8 +26,10 @@ const nextConfig = {
         source: '/(.*)',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options',         value: 'DENY' },
           { key: 'X-XSS-Protection',        value: '1; mode=block' },
+          // COOP set to allow popups so Google Sign-In popup can
+          // communicate back to the opener window.
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
         ],
       },
     ]
