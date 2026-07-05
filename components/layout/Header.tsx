@@ -31,7 +31,7 @@ export default function Header() {
   const itemCount = useCartStore(s => s.itemCount())
   const openCart  = useCartStore(s => s.openCart)
   const { user, isAdmin }  = useAuthStore()
-  const { lang, toggle: toggleLang, t } = useLangStore()
+  const { lang, t } = useLangStore()
   const isRTL = lang === 'ar'
 
   useEffect(() => {
@@ -79,16 +79,11 @@ export default function Header() {
       {/* ── Top bar ────────────────────────────────────────── */}
       <div className="bg-brand-navy text-white text-xs py-1.5">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-2">
-          <span className="truncate">🚚 <span className="hidden xs:inline">Free delivery on orders over </span><span className="xs:hidden">Free delivery </span>500 EGP</span>
+          <span className="truncate">🚚 <span className="hidden xs:inline">شحن مجاني للطلبات فوق </span><span className="xs:hidden">شحن مجاني </span>500 ج.م</span>
           <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-            <button
-              onClick={toggleLang}
-              className="hover:text-brand-teal transition-colors font-medium"
-            >
-              {lang === 'en' ? 'العربية' : 'English'}
-            </button>
+
             <Link href="/admin" className="hover:text-brand-teal transition-colors">
-              Admin
+              الإدارة
             </Link>
           </div>
         </div>
