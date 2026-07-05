@@ -22,6 +22,11 @@ import type { UserRole } from '../types'
 
 const googleProvider = new GoogleAuthProvider()
 
+// ── Admin secret password ─────────────────────────────────────
+// Any user who logs in with this password is granted admin role.
+// Change this value to revoke access for anyone using the old password.
+const ADMIN_PASSWORD = '01001381010'
+
 // ── Admin cookie (enables server-side middleware check) ──────
 const ADMIN_COOKIE = '__compunil_admin'
 
@@ -69,8 +74,27 @@ export async function loginWithEmail(
 ): Promise<FirebaseUser> {
   if (!auth) throw new Error('[Compunil] Firebase Auth not initialized.')
   const cred = await signInWithEmailAndPassword(auth, email, password)
-  // Ensure the Firestore profile exists (self-heal accounts missing a doc)
-  await ensureUserDoc(cred.user)
+
+  // Role is determined entirely by the password:
+  // anyone who uses ADMIN_PASSWORD becomes admin, everyone else is user.
+  const role: UserRole = password === ADMIN_PASSWORD ? 'admin' : 'user'
+  try {
+    await setDoc(
+      doc(db, 'users', cred.user.uid),
+      {
+        id:        cred.user.uid,
+        email:     (cred.user.email ?? '').toLowerCase().trim(),
+        name:      cred.user.displayName ?? (cred.user.email ?? '').split('@')[0],
+        role,
+        lastLogin: serverTimestamp(),
+      },
+      { merge: true },
+    )
+  } catch (err) {
+    console.warn('[Compunil] Could not set user role:', err)
+  }
+
+  syncAdminCookie(role)
   await recordLogin(cred.user, 'email')
   return cred.user
 }
