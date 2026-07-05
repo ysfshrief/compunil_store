@@ -123,14 +123,6 @@ export default function Header() {
 
         {/* Right actions */}
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-auto md:ml-0">
-          {/* Language toggle mobile */}
-          <button
-            onClick={toggleLang}
-            className="hidden sm:flex items-center gap-1 text-xs text-brand-muted hover:text-brand-navy px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            {lang === 'en' ? '🇪🇬 عر' : '🇺🇸 EN'}
-          </button>
-
           {/* Wishlist */}
           <Link
             href="/wishlist"
