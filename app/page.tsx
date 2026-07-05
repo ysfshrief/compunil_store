@@ -18,7 +18,7 @@ const HERO_SLIDES = [
   {
     title:    "Egypt's #1 Tech Store",
     subtitle: 'Latest laptops, components & gaming gear at unbeatable prices',
-    cta:      'Shop Now',
+    cta:      'تسوق الآن',
     ctaHref:  '/shop',
     badge:    '🔥 Up to 30% Off',
     bg:       'from-[#0A1F4E] via-[#1B3A7A] to-[#00B4D8]',
@@ -42,10 +42,10 @@ const HERO_SLIDES = [
 ]
 
 const PERKS = [
-  { icon: FiTruck,       label: 'Free Delivery',    sub: 'On orders over 500 EGP' },
-  { icon: FiShield,      label: 'Official Warranty', sub: 'Guaranteed authentic products' },
-  { icon: FiHeadphones,  label: 'Expert Support',    sub: 'Mon–Sat 9AM–8PM' },
-  { icon: FiRefreshCw,   label: 'Easy Returns',      sub: '14-day return policy' },
+  { icon: FiTruck,       label: 'شحن مجاني',         sub: 'للطلبات فوق 500 ج.م' },
+  { icon: FiShield,      label: 'ضمان رسمي',          sub: 'منتجات أصلية مضمونة' },
+  { icon: FiHeadphones,  label: 'دعم متخصص',          sub: 'السبت–الخميس 9ص–8م' },
+  { icon: FiRefreshCw,   label: 'إرجاع سهل',          sub: 'سياسة إرجاع 14 يوم' },
 ]
 
 export default function HomePage() {
@@ -138,9 +138,7 @@ export default function HomePage() {
               <Link
                 href="/shop?sale=true"
                 className="px-5 sm:px-6 py-3 sm:py-3.5 border-2 border-white/40 text-white font-semibold rounded-xl hover:bg-white/10 transition-colors text-sm sm:text-base"
-              >
-                View Deals
-              </Link>
+              > عروض الأسعار </Link>
             </motion.div>
           </div>
         </div>
@@ -182,7 +180,7 @@ export default function HomePage() {
 
       {/* ── Categories ────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 py-10">
-        <SectionHeader title="Shop by Category" href="/shop" />
+        <SectionHeader title="تسوق حسب الفئة" href="/shop" />
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           {categories.map(cat => (
             <Link
@@ -202,7 +200,7 @@ export default function HomePage() {
       {/* ── Featured Products ──────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 pb-10">
         <SectionHeader
-          title="Featured Products"
+          title="منتجات مميزة"
           subtitle="Hand-picked for quality and value"
           href="/shop?featured=true"
         />
