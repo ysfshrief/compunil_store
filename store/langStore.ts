@@ -142,7 +142,7 @@ const translations: Record<Lang, Record<string, string>> = {
 export const useLangStore = create<LangStore>()(
   persist(
     (set, get) => ({
-      lang: 'en',
+      lang: 'ar',
       toggle:  () => set(s => ({ lang: s.lang === 'en' ? 'ar' : 'en' })),
       setLang: l => set({ lang: l }),
       isRTL:   () => get().lang === 'ar',
