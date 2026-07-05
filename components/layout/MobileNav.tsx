@@ -11,11 +11,11 @@ import { useCartStore } from '../../store/cartStore'
 import { cn } from '../../lib/utils'
 
 const items = [
-  { href: '/',         icon: FiHome,         label: 'Home' },
-  { href: '/shop',     icon: FiGrid,         label: 'Shop' },
-  { href: '/cart',     icon: FiShoppingCart, label: 'Cart', showBadge: true },
-  { href: '/wishlist', icon: FiHeart,        label: 'Saved' },
-  { href: '/account/orders', icon: FiUser,   label: 'Account' },
+  { href: '/',         icon: FiHome,         label: 'الرئيسية' },
+  { href: '/shop',     icon: FiGrid,         label: 'المتجر' },
+  { href: '/cart',     icon: FiShoppingCart, label: 'السلة', showBadge: true },
+  { href: '/wishlist', icon: FiHeart,        label: 'المحفوظات' },
+  { href: '/account/orders', icon: FiUser,   label: 'حسابي' },
 ]
 
 export default function MobileNav() {
