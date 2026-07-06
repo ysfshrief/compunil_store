@@ -11,8 +11,7 @@ import {
 import { db } from './firebase'
 import type {
   Product, Order, User, Category, Review,
-  ProductFilters, OrderStatus, DashboardStats, UserRole,
-} from '../types'
+  ProductFilters, OrderStatus, DashboardStats, UserRole,, StoreSettings } from '../types'
 
 // ── Collection helpers ───────────────────────────────────────
 const COL = {
@@ -278,6 +277,35 @@ export async function setUserRoleByEmail(email: string, role: UserRole): Promise
 export async function getAdmins(): Promise<User[]> {
   const snap = await getDocs(query(COL.users(), where('role', '==', 'admin')))
   return snap.docs.map(d => ({ id: d.id, ...d.data() } as User))
+}
+
+
+// ── Store Settings ────────────────────────────────────────────
+export const DEFAULT_STORE_SETTINGS: StoreSettings = {
+  shippingFee:       50,
+  freeShippingAbove: 500,
+  phone:             '01001381010',
+  whatsapp:          '201001381010',
+  email:             'shriefarands2015@gmail.com',
+  address:           'Damnhour, El Beheira, Egypt',
+  facebook:          '',
+  instagram:         '',
+  announcementAr:    'شحن مجاني للطلبات فوق 500 ج.م',
+  announcementEn:    'Free delivery on orders over 500 EGP',
+}
+
+export async function getStoreSettings(): Promise<StoreSettings> {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'store'))
+    if (snap.exists()) return { ...DEFAULT_STORE_SETTINGS, ...snap.data() } as StoreSettings
+  } catch (err) {
+    console.warn('[Compunil] Could not load store settings:', err)
+  }
+  return DEFAULT_STORE_SETTINGS
+}
+
+export async function saveStoreSettings(s: Partial<StoreSettings>): Promise<void> {
+  await setDoc(doc(db, 'settings', 'store'), { ...s, updatedAt: serverTimestamp() }, { merge: true })
 }
 
 // ── Dashboard Stats ──────────────────────────────────────────
