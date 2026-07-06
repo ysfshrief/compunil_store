@@ -12,14 +12,17 @@ import {
 } from '@/lib/firestore';
 import { getAllProducts } from '@/lib/firestore';
 import { uploadProductImages } from '@/lib/storage';
+import { driveImageUrl } from '@/lib/utils';
 import { formatEGP, productPlaceholder } from '@/lib/utils';
 import type { Product, Category } from '@/types';
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '@/lib/mockData';
 import toast from 'react-hot-toast';
 
 const EMPTY_FORM = {
-  name: '', description: '', price: '', originalPrice: '', category: '',
+  name: '', nameAr: '', description: '', descriptionAr: '',
+  price: '', originalPrice: '', category: '',
   brand: '', stock: '', isFeatured: false, isOnSale: false,
+  imageUrls: '',  // newline-separated image URLs (Drive links supported)
   specifications: [{ key: '', value: '' }],
 };
 
@@ -66,7 +69,10 @@ export default function AdminProductsPage() {
     setEditingProduct(p);
     setForm({
       name: p.name,
+      nameAr: p.nameAr ?? '',
       description: p.description,
+      descriptionAr: p.descriptionAr ?? '',
+      imageUrls: '',
       price: String(p.price),
       originalPrice: String(p.originalPrice || ''),
       category: p.category,
@@ -114,9 +120,19 @@ export default function AdminProductsPage() {
         images = [...images.filter(url => imagePreview.includes(url)), ...urls];
       }
 
+      // Merge image URLs pasted by the admin (Google Drive links auto-converted)
+      const pastedUrls = form.imageUrls
+        .split('\n')
+        .map(u => u.trim())
+        .filter(Boolean)
+        .map(driveImageUrl);
+      if (pastedUrls.length > 0) images = [...images, ...pastedUrls];
+
       const payload = {
         name: form.name.trim(),
+        nameAr: form.nameAr.trim(),
         description: form.description.trim(),
+        descriptionAr: form.descriptionAr.trim(),
         price: Number(form.price),
         originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined,
         category: form.category,
@@ -339,11 +355,21 @@ export default function AdminProductsPage() {
                 {/* Name + Brand */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Product Name *</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Product Name (English) *</label>
                     <input
                       value={form.name}
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                       placeholder="e.g. RTX 4080 Super"
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">اسم المنتج (عربي)</label>
+                    <input
+                      value={form.nameAr}
+                      onChange={e => setForm(f => ({ ...f, nameAr: e.target.value }))}
+                      placeholder="مثال: كارت شاشة RTX 4080"
+                      dir="rtl"
                       className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal"
                     />
                   </div>
@@ -423,9 +449,9 @@ export default function AdminProductsPage() {
                   ))}
                 </div>
 
-                {/* Description */}
+                {/* Description EN */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Description (English)</label>
                   <textarea
                     value={form.description}
                     onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
@@ -433,6 +459,33 @@ export default function AdminProductsPage() {
                     placeholder="Product description…"
                     className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal resize-none"
                   />
+                </div>
+
+                {/* Description AR */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">الوصف (عربي)</label>
+                  <textarea
+                    value={form.descriptionAr}
+                    onChange={e => setForm(f => ({ ...f, descriptionAr: e.target.value }))}
+                    rows={3}
+                    dir="rtl"
+                    placeholder="وصف المنتج…"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal resize-none"
+                  />
+                </div>
+
+                {/* Image URLs (Drive) */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">روابط صور إضافية (Google Drive) — رابط في كل سطر</label>
+                  <textarea
+                    value={form.imageUrls}
+                    onChange={e => setForm(f => ({ ...f, imageUrls: e.target.value }))}
+                    rows={2}
+                    dir="ltr"
+                    placeholder={'https://drive.google.com/file/d/XXXX/view\nhttps://...'}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal resize-none font-mono"
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">الصق روابط مشاركة Drive وستتحول تلقائياً لصور — الملف يجب أن يكون "Anyone with the link"</p>
                 </div>
 
                 {/* Specs */}
