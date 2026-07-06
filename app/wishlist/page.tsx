@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiHeart, FiShoppingCart, FiTrash2, FiArrowRight } from 'react-icons/fi';
 import { useWishlistStore } from '@/store/wishlistStore';
+import { useLangStore } from '@/store/langStore';
 import { useCartStore } from '@/store/cartStore';
 import { getProductById } from '@/lib/firestore';
 import { formatEGP, productPlaceholder } from '@/lib/utils';
@@ -15,6 +16,7 @@ import toast from 'react-hot-toast';
 
 export default function WishlistPage() {
   const { ids, toggle } = useWishlistStore();
+  const { t } = useLangStore();
   const { addItem } = useCartStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,9 +58,9 @@ export default function WishlistPage() {
         <div>
           <h1 className="text-2xl font-bold text-brand-navy flex items-center gap-2">
             <FiHeart className="w-6 h-6 text-red-500" />
-            Wishlist
+            {t('wishlist.title')}
           </h1>
-          <p className="text-gray-500 text-sm mt-1">{ids.length} saved item{ids.length !== 1 ? 's' : ''}</p>
+          <p className="text-gray-500 text-sm mt-1">{ids.length} {ids.length === 1 ? t('wishlist.saved') : t('wishlist.savedPlural')}</p>
         </div>
         {products.length > 0 && (
           <button
@@ -90,7 +92,7 @@ export default function WishlistPage() {
           <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5">
             <FiHeart className="w-10 h-10 text-red-300" />
           </div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Your wishlist is empty</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">{t('wishlist.empty')}</h2>
           <p className="text-gray-500 text-sm mb-6 max-w-xs mx-auto">
             Save products you love by clicking the heart icon while browsing
           </p>
@@ -98,7 +100,7 @@ export default function WishlistPage() {
             href="/shop"
             className="inline-flex items-center gap-2 bg-brand-navy text-white font-semibold px-6 py-3 rounded-xl hover:bg-brand-teal transition-colors"
           >
-            Browse Products <FiArrowRight className="w-4 h-4" />
+            {t('wishlist.browse')} <FiArrowRight className="w-4 h-4" />
           </Link>
         </motion.div>
       ) : (
