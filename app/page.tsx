@@ -13,42 +13,35 @@ import SectionHeader from '../components/ui/SectionHeader'
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../lib/mockData'
 import { getFeaturedProducts, getProducts, getCategories } from '../lib/firestore'
 import type { Product, Category } from '../types'
+import { useLangStore } from '../store/langStore'
 
 const HERO_SLIDES = [
   {
-    title:    "Egypt's #1 Tech Store",
-    subtitle: 'Latest laptops, components & gaming gear at unbeatable prices',
-    cta:      'تسوق الآن',
-    ctaHref:  '/shop',
-    badge:    '🔥 Up to 30% Off',
-    bg:       'from-[#0A1F4E] via-[#1B3A7A] to-[#00B4D8]',
+    titleKey: 'home.hero.title', subKey: 'home.hero.subtitle', ctaKey: 'home.hero.shopNow',
+    ctaHref: '/shop', badgeKey: 'home.hero.upTo', badgeIcon: '🔥',
+    bg: 'from-[#0A1F4E] via-[#1B3A7A] to-[#00B4D8]',
   },
   {
-    title:    'CCTV & Security Systems',
-    subtitle: 'Protect what matters — professional installation available',
-    cta:      'View CCTV',
-    ctaHref:  '/shop?category=cctv',
-    badge:    '📷 Free Installation',
-    bg:       'from-[#064663] via-[#04293A] to-[#00B4D8]',
+    titleKey: 'slide.cctv.title', subKey: 'slide.cctv.sub', ctaKey: 'slide.cctv.cta',
+    ctaHref: '/shop?category=cctv', badgeKey: 'slide.cctv.badge', badgeIcon: '📷',
+    bg: 'from-[#064663] via-[#04293A] to-[#00B4D8]',
   },
   {
-    title:    'Gaming Accessories',
-    subtitle: 'Level up your setup — keyboards, mice, headsets & more',
-    cta:      'Shop Gaming',
-    ctaHref:  '/shop?category=gaming',
-    badge:    '🎮 New Arrivals',
-    bg:       'from-[#2D1B69] via-[#1B3A7A] to-[#4CAF50]',
+    titleKey: 'slide.gaming.title', subKey: 'slide.gaming.sub', ctaKey: 'slide.gaming.cta',
+    ctaHref: '/shop?category=gaming', badgeKey: 'slide.gaming.badge', badgeIcon: '🎮',
+    bg: 'from-[#2D1B69] via-[#1B3A7A] to-[#4CAF50]',
   },
 ]
 
 const PERKS = [
-  { icon: FiTruck,       label: 'شحن مجاني',         sub: 'للطلبات فوق 500 ج.م' },
-  { icon: FiShield,      label: 'ضمان رسمي',          sub: 'منتجات أصلية مضمونة' },
-  { icon: FiHeadphones,  label: 'دعم متخصص',          sub: 'السبت–الخميس 9ص–8م' },
-  { icon: FiRefreshCw,   label: 'إرجاع سهل',          sub: 'سياسة إرجاع 14 يوم' },
+  { icon: FiTruck,      labelKey: 'home.perk.delivery', subKey: 'home.perk.deliverySub' },
+  { icon: FiShield,     labelKey: 'home.perk.warranty', subKey: 'home.perk.warrantySub' },
+  { icon: FiHeadphones, labelKey: 'home.perk.support',  subKey: 'home.perk.supportSub' },
+  { icon: FiRefreshCw,  labelKey: 'home.perk.returns',  subKey: 'home.perk.returnsSub' },
 ]
 
 export default function HomePage() {
+  const { t } = useLangStore()
   const [slide, setSlide]         = useState(0)
   const [featured, setFeatured]   = useState<Product[]>([])
   const [deals, setDeals]         = useState<Product[]>([])
@@ -102,7 +95,7 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               className="inline-block bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-medium mb-4"
             >
-              {s.badge}
+              {s.badgeIcon} {t(s.badgeKey)}
             </motion.span>
             <motion.h1
               key={`title-${slide}`}
@@ -111,7 +104,7 @@ export default function HomePage() {
               transition={{ duration: 0.5 }}
               className="text-3xl sm:text-5xl font-extrabold leading-tight mb-4"
             >
-              {s.title}
+              {t(s.titleKey)}
             </motion.h1>
             <motion.p
               key={`sub-${slide}`}
@@ -120,7 +113,7 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-base sm:text-lg text-white/80 mb-8"
             >
-              {s.subtitle}
+              {t(s.subKey)}
             </motion.p>
             <motion.div
               key={`cta-${slide}`}
@@ -133,12 +126,12 @@ export default function HomePage() {
                 href={s.ctaHref}
                 className="px-6 sm:px-8 py-3 sm:py-3.5 bg-white text-brand-navy font-bold rounded-xl hover:bg-brand-light transition-colors flex items-center gap-2 text-sm sm:text-base"
               >
-                {s.cta} <FiArrowRight size={16} />
+                {t(s.ctaKey)} <FiArrowRight size={16} />
               </Link>
               <Link
                 href="/shop?sale=true"
                 className="px-5 sm:px-6 py-3 sm:py-3.5 border-2 border-white/40 text-white font-semibold rounded-xl hover:bg-white/10 transition-colors text-sm sm:text-base"
-              > عروض الأسعار </Link>
+              > {t("home.hero.viewDeals")} </Link>
             </motion.div>
           </div>
         </div>
@@ -169,8 +162,8 @@ export default function HomePage() {
                   <perk.icon size={18} className="text-brand-navy" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-semibold text-brand-navy leading-tight">{perk.label}</p>
-                  <p className="text-[11px] text-brand-muted hidden sm:block">{perk.sub}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-brand-navy leading-tight">{t(perk.labelKey)}</p>
+                  <p className="text-[11px] text-brand-muted hidden sm:block">{t(perk.subKey)}</p>
                 </div>
               </div>
             ))}
@@ -180,7 +173,7 @@ export default function HomePage() {
 
       {/* ── Categories ────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 py-10">
-        <SectionHeader title="تسوق حسب الفئة" href="/shop" />
+        <SectionHeader title={t("home.shopByCategory")} href="/shop" />
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           {categories.map(cat => (
             <Link
@@ -200,7 +193,7 @@ export default function HomePage() {
       {/* ── Featured Products ──────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 pb-10">
         <SectionHeader
-          title="منتجات مميزة"
+          title={t("home.featured")}
           subtitle="Hand-picked for quality and value"
           href="/shop?featured=true"
         />
@@ -237,7 +230,7 @@ export default function HomePage() {
       {/* ── Why Compunil ──────────────────────────────────── */}
       <section className="bg-white border-t border-brand-border">
         <div className="max-w-7xl mx-auto px-4 py-12">
-          <h2 className="text-2xl font-bold text-brand-navy text-center mb-8">Why Compunil?</h2>
+          <h2 className="text-2xl font-bold text-brand-navy text-center mb-8">{t("home.whyUs")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
               { emoji: '🏆', title: '5+ Years in Business', body: 'Trusted by thousands of customers across Egypt for premium tech products.' },
