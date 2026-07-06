@@ -6,9 +6,7 @@
 import Link from 'next/link'
 import { FiFacebook, FiInstagram, FiMail, FiPhone, FiMapPin, FiMessageCircle } from 'react-icons/fi'
 
-const PHONE = '01001381010'
-const WHATSAPP = '201001381010'   // international format for wa.me
-const EMAIL = 'shriefarands2015@gmail.com'
+import { useSettingsStore } from '../../store/settingsStore'
 
 const links = {
   shop: [
@@ -36,6 +34,10 @@ const links = {
 }
 
 export default function Footer() {
+  const { settings } = useSettingsStore()
+  const PHONE    = settings.phone
+  const WHATSAPP = settings.whatsapp
+  const EMAIL    = settings.email
   return (
     <footer className="bg-brand-navydark text-gray-300">
       <div className="max-w-7xl mx-auto px-4 pt-14 pb-8">
@@ -69,7 +71,7 @@ export default function Footer() {
               </a>
               <div className="flex items-start gap-2.5">
                 <FiMapPin size={15} className="mt-0.5 text-brand-teal flex-shrink-0" />
-                <span>Damnhour, El Beheira, Egypt</span>
+                <span>{settings.address}</span>
               </div>
             </div>
           </div>
@@ -160,10 +162,10 @@ export default function Footer() {
             © {new Date().getFullYear()} Compunil Electronics Supply Solutions. All rights reserved.
           </p>
           <div className="flex items-center gap-3">
-            <a href="#" aria-label="Facebook" className="w-8 h-8 rounded-full bg-white/10 hover:bg-brand-teal flex items-center justify-center transition-colors">
+            <a href={settings.facebook || '#'} target={settings.facebook ? '_blank' : undefined} rel="noopener noreferrer" aria-label="Facebook" className="w-8 h-8 rounded-full bg-white/10 hover:bg-brand-teal flex items-center justify-center transition-colors">
               <FiFacebook size={14} />
             </a>
-            <a href="#" aria-label="Instagram" className="w-8 h-8 rounded-full bg-white/10 hover:bg-brand-teal flex items-center justify-center transition-colors">
+            <a href={settings.instagram || '#'} target={settings.instagram ? '_blank' : undefined} rel="noopener noreferrer" aria-label="Instagram" className="w-8 h-8 rounded-full bg-white/10 hover:bg-brand-teal flex items-center justify-center transition-colors">
               <FiInstagram size={14} />
             </a>
             <a href={`https://wa.me/${WHATSAPP}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="w-8 h-8 rounded-full bg-white/10 hover:bg-green-500 flex items-center justify-center transition-colors">
