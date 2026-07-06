@@ -258,7 +258,7 @@ export default function CheckoutPage() {
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1">{t('checkout.city')} *</label>
                       <input value={form.city} onChange={e => set('city', e.target.value)}
-                        placeholder="Cairo"
+                        placeholder=""
                         className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal ${errors.city ? 'border-red-400' : 'border-gray-200'}`} />
                       {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
                     </div>
@@ -369,7 +369,7 @@ export default function CheckoutPage() {
             </div>
             <div className="border-t border-gray-100 pt-3 space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
+                <span>{t('cart.subtotal')}</span>
                 <span>{formatEGP(subtotal())}</span>
               </div>
               <div className="flex justify-between text-gray-600">
@@ -381,7 +381,7 @@ export default function CheckoutPage() {
                 )}
               </div>
               <div className="flex justify-between font-bold text-brand-navy text-base pt-1 border-t border-gray-100">
-                <span>Total</span>
+                <span>{t('cart.total')}</span>
                 <span>{formatEGP(total())}</span>
               </div>
             </div>
