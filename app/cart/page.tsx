@@ -148,7 +148,7 @@ export default function CartPage() {
               href="/shop"
               className="flex items-center gap-2 text-sm text-brand-teal hover:text-brand-navy transition-colors mt-2"
             >
-              ← Continue shopping
+              ← {t('cart.continue')}
             </Link>
           </div>
 
