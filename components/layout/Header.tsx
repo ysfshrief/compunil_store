@@ -14,6 +14,7 @@ import {
 import { useCartStore }  from '../../store/cartStore'
 import { useAuthStore }  from '../../store/authStore'
 import { useLangStore }  from '../../store/langStore'
+import { useSettingsStore } from '../../store/settingsStore'
 import { signOut }       from '../../lib/auth'
 import { cn }            from '../../lib/utils'
 import toast             from 'react-hot-toast'
@@ -32,6 +33,7 @@ export default function Header() {
   const openCart  = useCartStore(s => s.openCart)
   const { user, isAdmin } = useAuthStore()
   const { lang, toggle: toggleLang, t } = useLangStore()
+  const { settings } = useSettingsStore()
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8)
@@ -86,8 +88,7 @@ export default function Header() {
       <div className="bg-brand-navy text-white text-xs py-1.5">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between gap-2">
           <span className="truncate">
-            🚚 <span className="hidden xs:inline">شحن مجاني للطلبات فوق </span>
-            <span className="xs:hidden">شحن مجاني </span>500 ج.م
+            🚚 {lang === 'ar' ? (settings.announcementAr || 'شحن مجاني للطلبات فوق 500 ج.م') : (settings.announcementEn || 'Free delivery on orders over 500 EGP')}
           </span>
           {/* Admin link — only visible to admins */}
           {mounted && isAdmin() && (
