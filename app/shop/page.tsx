@@ -12,7 +12,7 @@ import SectionHeader from '../../components/ui/SectionHeader'
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../../lib/mockData'
 import { getAllProducts, getCategories } from '../../lib/firestore'
 import { useLangStore } from '../../store/langStore'
-import { formatEGP, cn } from '../../lib/utils'
+import { formatEGP, cn, localName } from '../../lib/utils'
 import type { Product, ProductFilters, Category } from '../../types'
 
 const SORT_OPTIONS = [
@@ -140,7 +140,7 @@ export default function ShopPage() {
   const hasActiveFilters = filters.category || filters.search || selectedBrands.length > 0 || minRating > 0
 
   const pageTitle = filters.category
-    ? categories.find(c => c.id === filters.category)?.name ?? t('shop.products')
+    ? (() => { const cc = categories.find(c => c.id === filters.category); return cc ? localName(cc, lang) : t('shop.products') })()
     : filters.search
     ? `${t('common.search')}: "${filters.search}"`
     : t('nav.allProducts')
@@ -188,7 +188,7 @@ export default function ShopPage() {
                   onChange={() => setFilters(p => ({ ...p, category: cat.id }))}
                   className="accent-brand-navy"
                 />
-                <span className="text-sm text-gray-600">{cat.icon} {cat.name}</span>
+                <span className="text-sm text-gray-600">{cat.icon} {localName(cat, lang)}</span>
               </label>
             ))}
           </div>
