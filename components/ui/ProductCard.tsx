@@ -11,7 +11,7 @@ import { FiHeart, FiShoppingCart, FiStar, FiZap } from 'react-icons/fi'
 import { useCartStore } from '../../store/cartStore'
 import { useWishlistStore } from '../../store/wishlistStore'
 import { useLangStore } from '../../store/langStore'
-import { formatEGP, discountPct, cn } from '../../lib/utils'
+import { formatEGP, discountPct, cn, localName } from '../../lib/utils'
 import type { Product } from '../../types'
 import toast from 'react-hot-toast'
 
@@ -38,7 +38,7 @@ export default function ProductCard({ product, className }: Props) {
     setAdding(true)
     addItem(product)
     openCart()
-    toast.success(`${product.name} added to cart!`, {
+    toast.success(`${localName(product, lang)} added to cart!`, {
       icon: '🛒',
       style: { borderRadius: '12px', background: '#1B3A7A', color: '#fff' },
     })
@@ -146,7 +146,7 @@ export default function ProductCard({ product, className }: Props) {
 
           {/* Name */}
           <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-tight mb-2 group-hover:text-brand-navy transition-colors">
-            {product.name}
+            {localName(product, lang)}
           </h3>
 
           {/* Rating */}
