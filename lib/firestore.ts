@@ -11,7 +11,7 @@ import {
 import { db } from './firebase'
 import type {
   Product, Order, User, Category, Review,
-  ProductFilters, OrderStatus, DashboardStats, UserRole,, StoreSettings } from '../types'
+  ProductFilters, OrderStatus, DashboardStats, UserRole, StoreSettings } from '../types'
 
 // ── Collection helpers ───────────────────────────────────────
 const COL = {
