@@ -111,7 +111,7 @@ export default function ProductPage() {
     if (!inStock || !product) return
     addItem(product, qty)
     openCart()
-    toast.success(`${qty}× ${product.name} added to cart!`, {
+    toast.success(`${qty}× ${product.name} ${t('product.addedToCart')}`, {
       icon: '🛒',
       style: { background: '#1B3A7A', color: '#fff', borderRadius: '12px' },
     })
@@ -202,7 +202,7 @@ export default function ProductPage() {
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(window.location.href)
-                    toast.success('Link copied!')
+                    toast.success(t('product.share'))
                   }}
                   className="p-2 rounded-lg hover:bg-gray-100 text-brand-muted"
                 >
@@ -236,7 +236,7 @@ export default function ProductPage() {
                 'text-sm font-medium',
                 inStock ? 'text-green-600' : 'text-red-500',
               )}>
-                {inStock ? `✓ In Stock (${product.stock} units)` : '✗ Out of Stock'}
+                {inStock ? `✓ ${t('product.inStock')} (${product.stock})` : `✗ ${t('product.outOfStock')}`}
               </span>
             </div>
 
@@ -263,7 +263,7 @@ export default function ProductPage() {
             {/* Quantity */}
             {inStock && (
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-600">Quantity:</span>
+                <span className="text-sm font-medium text-gray-600">{t('product.quantity')}:</span>
                 <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-1">
                   <button
                     onClick={() => setQty(Math.max(1, qty - 1))}
@@ -334,7 +334,7 @@ export default function ProductPage() {
                     : 'text-brand-muted border-transparent hover:text-brand-navy',
                 )}
               >
-                {tab === 'desc' ? 'Description' : tab === 'specs' ? 'Specifications' : `Reviews (${product.reviewCount})`}
+                {tab === 'desc' ? t('product.description') : tab === 'specs' ? t('product.specs') : `${t('product.reviews')} (${product.reviewCount})`}
               </button>
             ))}
           </div>
@@ -393,7 +393,7 @@ export default function ProductPage() {
         {related.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-bold text-brand-navy">Related Products</h2>
+              <h2 className="text-xl font-bold text-brand-navy">{t('product.related')}</h2>
             </div>
             <ProductGrid products={related} cols={4} />
           </section>
