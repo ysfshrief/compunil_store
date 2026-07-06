@@ -8,36 +8,37 @@ import { FiFacebook, FiInstagram, FiMail, FiPhone, FiMapPin, FiMessageCircle } f
 
 import { useSettingsStore } from '../../store/settingsStore'
 
-const links = {
-  shop: [
-    { href: '/shop?category=laptops',    label: 'Laptops' },
-    { href: '/shop?category=components', label: 'PC Components' },
-    { href: '/shop?category=gaming',     label: 'Gaming Accessories' },
-    { href: '/shop?category=networking', label: 'Networking' },
-    { href: '/shop?category=cctv',       label: 'CCTV Cameras' },
-    { href: '/shop',                     label: 'All Products' },
-  ],
-  account: [
-    { href: '/auth/login',      label: 'Sign In' },
-    { href: '/auth/register',   label: 'Create Account' },
-    { href: '/account/orders',  label: 'My Orders' },
-    { href: '/wishlist',        label: 'Wishlist' },
-    { href: '/cart',            label: 'My Cart' },
-  ],
-  support: [
-    { href: '/terms',    label: 'Terms of Service' },
-    { href: '/privacy',  label: 'Privacy Policy' },
-    { href: `https://wa.me/${WHATSAPP}`, label: 'WhatsApp Support', external: true },
-    { href: `tel:${PHONE}`,              label: 'Call Us', external: true },
-    { href: `mailto:${EMAIL}`,           label: 'Email Us', external: true },
-  ],
-}
-
 export default function Footer() {
   const { settings } = useSettingsStore()
   const PHONE    = settings.phone
   const WHATSAPP = settings.whatsapp
   const EMAIL    = settings.email
+
+  const links = {
+    shop: [
+      { href: '/shop?category=laptops',    label: 'Laptops' },
+      { href: '/shop?category=components', label: 'PC Components' },
+      { href: '/shop?category=gaming',     label: 'Gaming Accessories' },
+      { href: '/shop?category=networking', label: 'Networking' },
+      { href: '/shop?category=cctv',       label: 'CCTV Cameras' },
+      { href: '/shop',                     label: 'All Products' },
+    ],
+    account: [
+      { href: '/auth/login',      label: 'Sign In' },
+      { href: '/auth/register',   label: 'Create Account' },
+      { href: '/account/orders',  label: 'My Orders' },
+      { href: '/wishlist',        label: 'Wishlist' },
+      { href: '/cart',            label: 'My Cart' },
+    ],
+    support: [
+      { href: '/terms',    label: 'Terms of Service' },
+      { href: '/privacy',  label: 'Privacy Policy' },
+      { href: `https://wa.me/${WHATSAPP}`, label: 'WhatsApp Support', external: true },
+      { href: `tel:${PHONE}`,              label: 'Call Us', external: true },
+      { href: `mailto:${EMAIL}`,           label: 'Email Us', external: true },
+    ],
+  }
+
   return (
     <footer className="bg-brand-navydark text-gray-300">
       <div className="max-w-7xl mx-auto px-4 pt-14 pb-8">
