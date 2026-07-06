@@ -92,12 +92,12 @@ export default function ProductCard({ product, className }: Props) {
             )}
             {product.isFeatured && (
               <span className="bg-brand-teal text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                <FiZap size={9} /> Featured
+                <FiZap size={9} /> {t('home.featured').split(' ')[0]}
               </span>
             )}
             {!inStock && (
               <span className="bg-gray-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                Out of Stock
+                {t('product.outOfStock')}
               </span>
             )}
           </div>
