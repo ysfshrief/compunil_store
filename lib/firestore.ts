@@ -11,7 +11,7 @@ import {
 import { db } from './firebase'
 import type {
   Product, Order, User, Category, Review,
-  ProductFilters, OrderStatus, DashboardStats, UserRole, StoreSettings } from '../types'
+  ProductFilters, OrderStatus, DashboardStats, UserRole, StoreSettings, HeroSlide } from '../types'
 
 // ── Collection helpers ───────────────────────────────────────
 const COL = {
@@ -306,6 +306,35 @@ export async function getStoreSettings(): Promise<StoreSettings> {
 
 export async function saveStoreSettings(s: Partial<StoreSettings>): Promise<void> {
   await setDoc(doc(db, 'settings', 'store'), { ...s, updatedAt: serverTimestamp() }, { merge: true })
+}
+
+
+// ── Hero Slides (homepage banners, admin-editable) ───────────
+export async function getHeroSlides(activeOnly = true): Promise<HeroSlide[]> {
+  try {
+    const snap = await getDocs(query(collection(db, 'heroSlides'), orderBy('order', 'asc')))
+    const slides = snap.docs.map(d => ({ id: d.id, ...d.data() } as HeroSlide))
+    return activeOnly ? slides.filter(s => s.active) : slides
+  } catch (err) {
+    console.warn('[Compunil] Could not load hero slides:', err)
+    return []
+  }
+}
+
+export async function saveHeroSlide(slide: Partial<HeroSlide> & { id?: string }): Promise<string> {
+  if (slide.id) {
+    const { id, ...data } = slide
+    await updateDoc(doc(db, 'heroSlides', id), { ...data, updatedAt: serverTimestamp() })
+    return id
+  }
+  const ref = await addDoc(collection(db, 'heroSlides'), {
+    ...slide, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+  })
+  return ref.id
+}
+
+export async function deleteHeroSlide(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'heroSlides', id))
 }
 
 // ── Dashboard Stats ──────────────────────────────────────────
