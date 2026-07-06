@@ -85,3 +85,30 @@ export function productPlaceholder(name: string): string {
   </svg>`
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 }
+
+/** Convert a Google Drive share link to a direct image URL.
+ *  Supports: drive.google.com/file/d/ID/view, open?id=ID, uc?id=ID
+ *  Non-Drive URLs pass through unchanged. */
+export function driveImageUrl(url: string): string {
+  if (!url) return url
+  const patterns = [
+    /drive\.google\.com\/file\/d\/([^/]+)/,
+    /drive\.google\.com\/open\?id=([^&]+)/,
+    /drive\.google\.com\/uc\?.*id=([^&]+)/,
+  ]
+  for (const p of patterns) {
+    const m = url.match(p)
+    if (m) return `https://drive.google.com/uc?export=view&id=${m[1]}`
+  }
+  return url
+}
+
+/** Get the localized name of a product/category based on language. */
+export function localName(item: { name: string; nameAr?: string }, lang: string): string {
+  return lang === 'ar' && item.nameAr ? item.nameAr : item.name
+}
+
+/** Get the localized description. */
+export function localDesc(item: { description?: string; descriptionAr?: string }, lang: string): string {
+  return (lang === 'ar' && item.descriptionAr ? item.descriptionAr : item.description) ?? ''
+}
