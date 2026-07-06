@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiPackage, FiChevronDown, FiChevronUp, FiArrowRight, FiLogOut } from 'react-icons/fi';
 import { useAuthStore } from '@/store/authStore';
+import { useLangStore } from '@/store/langStore';
 import { getOrdersByUser } from '@/lib/firestore';
 import { formatEGP, statusColor, formatDate } from '@/lib/utils';
 import { signOut } from '@/lib/auth';
@@ -150,6 +151,7 @@ function OrderCard({ order }: { order: Order }) {
 export default function AccountOrdersPage() {
   const router = useRouter();
   const { user, initialized } = useAuthStore();
+  const { t } = useLangStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -187,7 +189,7 @@ export default function AccountOrdersPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-brand-navy">My Orders</h1>
+          <h1 className="text-2xl font-bold text-brand-navy">{t('account.myOrders')}</h1>
           <p className="text-gray-500 text-sm mt-1">{orders.length} order{orders.length !== 1 ? 's' : ''} placed</p>
         </div>
         <button
@@ -195,7 +197,7 @@ export default function AccountOrdersPage() {
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 transition-colors"
         >
           <FiLogOut className="w-4 h-4" />
-          <span className="hidden sm:inline">Sign Out</span>
+          <span className="hidden sm:inline">{t('auth.logout')}</span>
         </button>
       </div>
 
@@ -213,13 +215,13 @@ export default function AccountOrdersPage() {
         <div className="grid grid-cols-2 gap-4 mt-5">
           <div className="bg-white/10 rounded-xl p-3 text-center">
             <div className="text-xl font-bold">{orders.length}</div>
-            <div className="text-xs text-white/70">Total Orders</div>
+            <div className="text-xs text-white/70">{t('account.totalOrders')}</div>
           </div>
           <div className="bg-white/10 rounded-xl p-3 text-center">
             <div className="text-xl font-bold">
               {formatEGP(orders.reduce((sum, o) => sum + o.total, 0))}
             </div>
-            <div className="text-xs text-white/70">Total Spent</div>
+            <div className="text-xs text-white/70">{t('account.totalSpent')}</div>
           </div>
         </div>
       </div>
@@ -234,13 +236,13 @@ export default function AccountOrdersPage() {
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <FiPackage className="w-8 h-8 text-gray-400" />
           </div>
-          <h2 className="text-lg font-bold text-gray-800 mb-2">No orders yet</h2>
-          <p className="text-gray-500 text-sm mb-5">Start shopping to see your orders here</p>
+          <h2 className="text-lg font-bold text-gray-800 mb-2">{t('account.noOrders')}</h2>
+          <p className="text-gray-500 text-sm mb-5">{t('account.startShopping')}</p>
           <Link
             href="/shop"
             className="inline-flex items-center gap-2 bg-brand-navy text-white font-semibold px-6 py-3 rounded-xl hover:bg-brand-teal transition-colors"
           >
-            Shop Now <FiArrowRight className="w-4 h-4" />
+            {t('account.shopNow')} <FiArrowRight className="w-4 h-4" />
           </Link>
         </div>
       ) : (
