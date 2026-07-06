@@ -10,6 +10,7 @@ import { motion } from 'framer-motion'
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
 import { FcGoogle } from 'react-icons/fc'
 import { loginWithEmail, loginWithGoogle } from '../../../lib/auth'
+import { useLangStore } from '../../../store/langStore'
 import Input  from '../../../components/ui/Input'
 import Button from '../../../components/ui/Button'
 import toast from 'react-hot-toast'
@@ -18,6 +19,7 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/'
+  const { t } = useLangStore()
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw]     = useState(false)
@@ -35,7 +37,7 @@ function LoginForm() {
     setLoading(true)
     try {
       await loginWithEmail(email, password)
-      toast.success('Welcome back!')
+      toast.success(t('auth.welcomeBack'))
       router.push(redirectTo)
     } catch (err: any) {
       const code = err?.code ?? ''
@@ -97,8 +99,8 @@ function LoginForm() {
         </div>
 
         <div className="bg-white rounded-2xl p-8 shadow-2xl">
-          <h1 className="text-2xl font-bold text-brand-navy mb-1">Welcome back</h1>
-          <p className="text-sm text-brand-muted mb-6">Sign in to your Compunil account</p>
+          <h1 className="text-2xl font-bold text-brand-navy mb-1">{t('auth.welcomeBack')}</h1>
+          <p className="text-sm text-brand-muted mb-6">{t('auth.signInDesc')}</p>
 
           {/* Google */}
           <button
@@ -107,18 +109,18 @@ function LoginForm() {
             className="w-full flex items-center justify-center gap-3 py-3 border-2 border-brand-border rounded-xl hover:bg-gray-50 transition-colors mb-5 font-medium text-gray-700 disabled:opacity-60"
           >
             <FcGoogle size={20} />
-            {googleLoading ? 'Connecting…' : 'Continue with Google'}
+            {googleLoading ? t('common.loading') : t('auth.continueGoogle')}
           </button>
 
           <div className="flex items-center gap-3 mb-5">
             <div className="flex-1 h-px bg-brand-border" />
-            <span className="text-xs text-brand-muted">or sign in with email</span>
+            <span className="text-xs text-brand-muted">{t('auth.orEmail')}</span>
             <div className="flex-1 h-px bg-brand-border" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Email"
+              label={t("auth.email")}
               type="email"
               value={email}
               onChange={e => { setEmail(e.target.value); setErrors(p => ({ ...p, email: '' })) }}
@@ -128,7 +130,7 @@ function LoginForm() {
               required
             />
             <Input
-              label="Password"
+              label={t("auth.password")}
               type={showPw ? 'text' : 'password'}
               value={password}
               onChange={e => { setPassword(e.target.value); setErrors(p => ({ ...p, password: '' })) }}
@@ -145,19 +147,19 @@ function LoginForm() {
 
             <div className="flex justify-end">
               <Link href="/auth/reset" className="text-sm text-brand-teal hover:text-brand-navy transition-colors">
-                Forgot password?
+                {t('auth.forgotPassword')}
               </Link>
             </div>
 
             <Button type="submit" loading={loading} fullWidth size="lg">
-              Sign In
+              {t('auth.login')}
             </Button>
           </form>
 
           <p className="text-center text-sm text-brand-muted mt-6">
-            Don't have an account?{' '}
+            {t('auth.noAccount')}{' '}
             <Link href="/auth/register" className="text-brand-teal font-semibold hover:text-brand-navy">
-              Create one
+              {t('auth.createOne')}
             </Link>
           </p>
         </div>
