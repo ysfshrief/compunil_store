@@ -8,18 +8,20 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { FiHome, FiGrid, FiShoppingCart, FiHeart, FiUser } from 'react-icons/fi'
 import { useCartStore } from '../../store/cartStore'
+import { useLangStore } from '../../store/langStore'
 import { cn } from '../../lib/utils'
 
 const items = [
-  { href: '/',         icon: FiHome,         label: 'الرئيسية' },
-  { href: '/shop',     icon: FiGrid,         label: 'المتجر' },
-  { href: '/cart',     icon: FiShoppingCart, label: 'السلة', showBadge: true },
-  { href: '/wishlist', icon: FiHeart,        label: 'المحفوظات' },
-  { href: '/account/orders', icon: FiUser,   label: 'حسابي' },
+  { href: '/',         icon: FiHome,         labelKey: 'nav.home' },
+  { href: '/shop',     icon: FiGrid,         labelKey: 'nav.shop' },
+  { href: '/cart',     icon: FiShoppingCart, labelKey: 'nav.cart', showBadge: true },
+  { href: '/wishlist', icon: FiHeart,        labelKey: 'nav.wishlist' },
+  { href: '/account/orders', icon: FiUser,   labelKey: 'nav.account' },
 ]
 
 export default function MobileNav() {
   const pathname  = usePathname()
+  const { t } = useLangStore()
   const itemCount = useCartStore(s => s.itemCount())
   const [mounted, setMounted] = useState(false)
 
@@ -56,7 +58,7 @@ export default function MobileNav() {
               </div>
 
               <span className={cn('text-[10px] font-medium', active && 'text-brand-navy')}>
-                {item.label}
+                {t(item.labelKey)}
               </span>
 
               {active && (
