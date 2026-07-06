@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiCheck, FiChevronRight, FiLock, FiMapPin, FiUser, FiPhone } from 'react-icons/fi'
 import { useCartStore } from '@/store/cartStore'
+import { useLangStore }  from '../../store/langStore'
 import { useAuthStore } from '@/store/authStore'
 import { createOrder } from '@/lib/firestore'
 import { formatEGP } from '@/lib/utils'
@@ -25,6 +26,7 @@ const EGYPT_GOVERNORATES = [
 type Step = 1 | 2 | 3
 
 export default function CheckoutPage() {
+  const { t } = useLangStore()
   const router = useRouter()
   const { items, total, subtotal, clearCart } = useCartStore()
   const { user, initialized } = useAuthStore()
@@ -138,7 +140,7 @@ export default function CheckoutPage() {
       const id = await createOrder(orderData)
       setOrderId(id)
       clearCart()
-      toast.success('Order placed successfully! 🎉')
+      toast.success(t('checkout.success'))
     } catch (err: any) {
       console.error('[Compunil] Order failed:', err?.code, err?.message, err)
       toast.error(`Order failed: ${err?.code ?? err?.message ?? 'Please try again'}`)
@@ -155,17 +157,17 @@ export default function CheckoutPage() {
           className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <FiCheck className="w-10 h-10 text-green-600" />
         </motion.div>
-        <h1 className="text-2xl font-bold text-brand-navy mb-2">Order Confirmed!</h1>
+        <h1 className="text-2xl font-bold text-brand-navy mb-2">{t('checkout.orderConfirmed')}</h1>
         <p className="text-gray-500 mb-2">Thank you, <strong>{form.name}</strong></p>
         <p className="text-sm text-gray-400 mb-8 font-mono">Order ID: {orderId}</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/account/orders"
             className="px-6 py-3 bg-brand-navy text-white font-semibold rounded-xl hover:bg-brand-teal transition-colors">
-            Track My Order
+            {t('checkout.trackOrder')}
           </Link>
           <Link href="/shop"
             className="px-6 py-3 border border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
-            Continue Shopping
+            {t('cart.continue')}
           </Link>
         </div>
       </div>
@@ -174,15 +176,15 @@ export default function CheckoutPage() {
 
   // ── Step indicator ────────────────────────────────────────
   const steps = [
-    { n: 1, label: 'Your Info',  icon: FiUser },
-    { n: 2, label: 'Address',    icon: FiMapPin },
-    { n: 3, label: 'Confirm',    icon: FiCheck },
+    { n: 1, label: t('checkout.info'),    icon: FiUser },
+    { n: 2, label: t('checkout.address'), icon: FiMapPin },
+    { n: 3, label: t('checkout.confirm'), icon: FiCheck },
   ] as const
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-brand-navy mb-6">Checkout</h1>
+        <h1 className="text-2xl font-bold text-brand-navy mb-6">{t('checkout.title')}</h1>
 
         {/* Steps */}
         <div className="flex items-center mb-8">
@@ -217,10 +219,10 @@ export default function CheckoutPage() {
                 <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-                  <h2 className="font-bold text-brand-navy text-lg">Personal Information</h2>
+                  <h2 className="font-bold text-brand-navy text-lg">{t('checkout.personalInfo')}</h2>
                   {[
-                    { id: 'name',  label: 'Full Name *',    placeholder: 'Ahmed Mohamed',      type: 'text' },
-                    { id: 'email', label: 'Email Address *', placeholder: 'ahmed@example.com', type: 'email' },
+                    { id: 'name',  label: t('checkout.fullName') + ' *',    placeholder: 'Ahmed Mohamed',      type: 'text' },
+                    { id: 'email', label: t('checkout.email') + ' *', placeholder: 'ahmed@example.com', type: 'email' },
                     { id: 'phone', label: 'Mobile Number *', placeholder: '01XXXXXXXXX',       type: 'tel' },
                   ].map(({ id, label, placeholder, type }) => (
                     <div key={id}>
@@ -234,7 +236,7 @@ export default function CheckoutPage() {
                   ))}
                   <button onClick={() => validateStep1() && setStep(2)}
                     className="w-full py-3 bg-brand-navy text-white font-bold rounded-xl hover:bg-brand-teal transition-colors flex items-center justify-center gap-2">
-                    Continue to Address <FiChevronRight />
+                    {t('checkout.continueAddress')} <FiChevronRight />
                   </button>
                 </motion.div>
               )}
@@ -244,9 +246,9 @@ export default function CheckoutPage() {
                 <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-                  <h2 className="font-bold text-brand-navy text-lg">Delivery Address</h2>
+                  <h2 className="font-bold text-brand-navy text-lg">{t('checkout.deliveryAddress')}</h2>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Street Address *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">{t('checkout.street')} *</label>
                     <input value={form.street} onChange={e => set('street', e.target.value)}
                       placeholder="15 Tahrir Square, Apartment 3"
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal ${errors.street ? 'border-red-400' : 'border-gray-200'}`} />
@@ -254,24 +256,24 @@ export default function CheckoutPage() {
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">City *</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">{t('checkout.city')} *</label>
                       <input value={form.city} onChange={e => set('city', e.target.value)}
                         placeholder="Cairo"
                         className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal ${errors.city ? 'border-red-400' : 'border-gray-200'}`} />
                       {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Governorate *</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">{t('checkout.governorate')} *</label>
                       <select value={form.governorate} onChange={e => set('governorate', e.target.value)}
                         className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal bg-white ${errors.governorate ? 'border-red-400' : 'border-gray-200'}`}>
-                        <option value="">Select governorate…</option>
+                        <option value="">{t('checkout.selectGov')}</option>
                         {EGYPT_GOVERNORATES.map(g => <option key={g} value={g}>{g}</option>)}
                       </select>
                       {errors.governorate && <p className="text-xs text-red-500 mt-1">{errors.governorate}</p>}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Delivery Notes</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">{t('checkout.notes')}</label>
                     <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
                       rows={2} placeholder="Any special instructions for delivery…"
                       className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal resize-none" />
@@ -279,11 +281,11 @@ export default function CheckoutPage() {
                   <div className="flex gap-3">
                     <button onClick={() => setStep(1)}
                       className="flex-1 py-3 border border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
-                      Back
+                      {t('checkout.back')}
                     </button>
                     <button onClick={() => validateStep2() && setStep(3)}
                       className="flex-1 py-3 bg-brand-navy text-white font-bold rounded-xl hover:bg-brand-teal transition-colors flex items-center justify-center gap-2">
-                      Review Order <FiChevronRight />
+                      {t('checkout.reviewOrder')} <FiChevronRight />
                     </button>
                   </div>
                 </motion.div>
@@ -333,7 +335,7 @@ export default function CheckoutPage() {
                   <div className="bg-blue-50 rounded-xl p-3 flex items-center gap-3">
                     <FiPhone className="w-5 h-5 text-brand-teal flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-semibold text-brand-navy">Cash on Delivery</p>
+                      <p className="text-sm font-semibold text-brand-navy">{t('checkout.payment')}</p>
                       <p className="text-xs text-gray-500">Pay when your order arrives</p>
                     </div>
                   </div>
@@ -341,12 +343,12 @@ export default function CheckoutPage() {
                   <div className="flex gap-3">
                     <button onClick={() => setStep(2)}
                       className="flex-1 py-3 border border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
-                      Back
+                      {t('checkout.back')}
                     </button>
                     <button onClick={placeOrder} disabled={loading}
                       className="flex-1 py-3 bg-brand-navy text-white font-bold rounded-xl hover:bg-brand-teal transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
                       <FiLock className="w-4 h-4" />
-                      {loading ? 'Placing Order…' : 'Place Order'}
+                      {loading ? t('checkout.placing') : t('checkout.placeOrder')}
                     </button>
                   </div>
                 </motion.div>
@@ -356,7 +358,7 @@ export default function CheckoutPage() {
 
           {/* Order Summary sidebar */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 h-fit sticky top-24">
-            <h3 className="font-bold text-brand-navy mb-4">Order Summary</h3>
+            <h3 className="font-bold text-brand-navy mb-4">{t('checkout.orderSummary')}</h3>
             <div className="space-y-2 text-sm text-gray-600 mb-4">
               {validItems.map((item: any) => (
                 <div key={item.product.id} className="flex justify-between">
