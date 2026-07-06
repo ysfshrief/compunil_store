@@ -51,6 +51,8 @@ export interface ProductSpec {
 }
 
 export interface Product {
+  nameAr?:        string   // Arabic name (shown when lang=ar)
+  descriptionAr?: string   // Arabic description
   id:              string
   name:            string
   nameAr?:         string
@@ -171,4 +173,24 @@ export interface StoreSettings {
   announcementAr?:    string   // top-bar announcement (Arabic)
   announcementEn?:    string   // top-bar announcement (English)
   updatedAt?:         any
+}
+
+// ── Hero Slide (admin-editable homepage banner) ──────────────
+export interface HeroSlide {
+  id:         string
+  titleEn:    string
+  titleAr:    string
+  subEn:      string
+  subAr:      string
+  ctaEn:      string
+  ctaAr:      string
+  ctaHref:    string    // where the button goes e.g. /shop?category=cctv
+  badgeEn?:   string
+  badgeAr?:   string
+  imageUrl?:  string    // optional background image (Drive links supported)
+  bg?:        string    // tailwind gradient classes fallback
+  order:      number
+  active:     boolean
+  createdAt?: any
+  updatedAt?: any
 }
