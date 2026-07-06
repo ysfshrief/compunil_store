@@ -23,10 +23,24 @@ interface CartStore {
   // Computed (getters)
   itemCount:  () => number
   subtotal:   () => number
+  shipping:   () => number
   total:      () => number
 }
 
-const SHIPPING = 0 // Free shipping placeholder
+// Shipping is dynamic — read from the admin-controlled settings store.
+// Free above the threshold; flat fee otherwise. threshold 0 = never free.
+function calcShipping(subtotal: number): number {
+  try {
+    // Late import to avoid circular deps
+    const { useSettingsStore } = require('./settingsStore')
+    const { shippingFee, freeShippingAbove } = useSettingsStore.getState().settings
+    if (subtotal <= 0) return 0
+    if (freeShippingAbove > 0 && subtotal >= freeShippingAbove) return 0
+    return shippingFee
+  } catch {
+    return 0
+  }
+}
 
 export const useCartStore = create<CartStore>()(
   persist(
@@ -75,7 +89,8 @@ export const useCartStore = create<CartStore>()(
 
       itemCount: () => get().items.reduce((s, i) => s + i.quantity, 0),
       subtotal:  () => get().items.reduce((s, i) => s + i.product.price * i.quantity, 0),
-      total:     () => get().subtotal() + SHIPPING,
+      shipping:  () => calcShipping(get().subtotal()),
+      total:     () => get().subtotal() + calcShipping(get().subtotal()),
     }),
     {
       name: 'compunil-cart',
