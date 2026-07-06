@@ -11,9 +11,10 @@ import { FiArrowRight, FiTruck, FiShield, FiHeadphones, FiRefreshCw } from 'reac
 import ProductGrid  from '../components/ui/ProductGrid'
 import SectionHeader from '../components/ui/SectionHeader'
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../lib/mockData'
-import { getFeaturedProducts, getProducts, getCategories } from '../lib/firestore'
-import type { Product, Category } from '../types'
+import { getFeaturedProducts, getProducts, getCategories, getHeroSlides } from '../lib/firestore'
+import type { Product, Category, HeroSlide } from '../types'
 import { useLangStore } from '../store/langStore'
+import { driveImageUrl, localName } from '../lib/utils'
 
 const HERO_SLIDES = [
   {
@@ -41,7 +42,8 @@ const PERKS = [
 ]
 
 export default function HomePage() {
-  const { t } = useLangStore()
+  const { lang, t } = useLangStore()
+  const [dbSlides, setDbSlides] = useState<HeroSlide[]>([])
   const [slide, setSlide]         = useState(0)
   const [featured, setFeatured]   = useState<Product[]>([])
   const [deals, setDeals]         = useState<Product[]>([])
@@ -53,11 +55,13 @@ export default function HomePage() {
     // (e.g. before the admin has added real products).
     async function loadData() {
       try {
-        const [feat, saleRes, cats] = await Promise.all([
+        const [feat, saleRes, cats, slides] = await Promise.all([
           getFeaturedProducts(8),
           getProducts({ sortBy: 'newest' }, 20),
           getCategories(),
+          getHeroSlides(true),
         ])
+        setDbSlides(slides)
         const onSale = saleRes.products.filter(p => p.isOnSale).slice(0, 4)
 
         setFeatured(feat.length ? feat : MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 8))
@@ -77,16 +81,37 @@ export default function HomePage() {
 
   // Auto-advance hero
   useEffect(() => {
-    const t = setInterval(() => setSlide(s => (s + 1) % HERO_SLIDES.length), 5000)
-    return () => clearInterval(t)
+    const iv = setInterval(() => setSlide(s => s + 1), 5000)
+    return () => clearInterval(iv)
   }, [])
 
-  const s = HERO_SLIDES[slide]
+  // Use admin-created slides when available; otherwise the built-in defaults
+  const effectiveSlides = dbSlides.length
+    ? dbSlides.map(d => ({
+        title:    lang === 'ar' ? d.titleAr : d.titleEn,
+        subtitle: lang === 'ar' ? d.subAr   : d.subEn,
+        cta:      lang === 'ar' ? d.ctaAr   : d.ctaEn,
+        badge:    lang === 'ar' ? (d.badgeAr ?? '') : (d.badgeEn ?? ''),
+        badgeIcon: '',
+        ctaHref:  d.ctaHref || '/shop',
+        bg:       d.bg || 'from-[#0A1F4E] via-[#1B3A7A] to-[#00B4D8]',
+        imageUrl: d.imageUrl ? driveImageUrl(d.imageUrl) : '',
+      }))
+    : HERO_SLIDES.map(h => ({
+        title: t(h.titleKey), subtitle: t(h.subKey), cta: t(h.ctaKey),
+        badge: t(h.badgeKey), badgeIcon: h.badgeIcon, ctaHref: h.ctaHref, bg: h.bg, imageUrl: '',
+      }))
+
+  const s = effectiveSlides[slide % effectiveSlides.length]
 
   return (
     <div className="bg-gray-50">
       {/* ── Hero ──────────────────────────────────────────── */}
       <section className={`relative bg-gradient-to-br ${s.bg} text-white overflow-hidden`}>
+        {s.imageUrl && (
+          <img src={s.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30"
+            onError={e => (e.currentTarget.style.display = 'none')} />
+        )}
         <div className="max-w-7xl mx-auto px-4 py-12 sm:py-24 relative z-10">
           <div className="max-w-xl">
             <motion.span
@@ -95,7 +120,7 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               className="inline-block bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-medium mb-4"
             >
-              {s.badgeIcon} {t(s.badgeKey)}
+              {s.badgeIcon} {s.badge}
             </motion.span>
             <motion.h1
               key={`title-${slide}`}
@@ -104,7 +129,7 @@ export default function HomePage() {
               transition={{ duration: 0.5 }}
               className="text-3xl sm:text-5xl font-extrabold leading-tight mb-4"
             >
-              {t(s.titleKey)}
+              {s.title}
             </motion.h1>
             <motion.p
               key={`sub-${slide}`}
@@ -113,7 +138,7 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-base sm:text-lg text-white/80 mb-8"
             >
-              {t(s.subKey)}
+              {s.subtitle}
             </motion.p>
             <motion.div
               key={`cta-${slide}`}
@@ -126,7 +151,7 @@ export default function HomePage() {
                 href={s.ctaHref}
                 className="px-6 sm:px-8 py-3 sm:py-3.5 bg-white text-brand-navy font-bold rounded-xl hover:bg-brand-light transition-colors flex items-center gap-2 text-sm sm:text-base"
               >
-                {t(s.ctaKey)} <FiArrowRight size={16} />
+                {s.cta} <FiArrowRight size={16} />
               </Link>
               <Link
                 href="/shop?sale=true"
@@ -138,7 +163,7 @@ export default function HomePage() {
 
         {/* Slide indicators */}
         <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2">
-          {HERO_SLIDES.map((_, i) => (
+          {effectiveSlides.map((_, i) => (
             <button
               key={i}
               onClick={() => setSlide(i)}
@@ -183,7 +208,7 @@ export default function HomePage() {
             >
               <span className="text-3xl group-hover:scale-110 transition-transform">{cat.icon}</span>
               <span className="text-xs font-semibold text-gray-700 group-hover:text-brand-navy transition-colors leading-tight">
-                {cat.name}
+                {localName(cat, lang)}
               </span>
             </Link>
           ))}
