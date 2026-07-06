@@ -16,18 +16,18 @@ import { formatEGP, cn } from '../../lib/utils'
 import type { Product, ProductFilters, Category } from '../../types'
 
 const SORT_OPTIONS = [
-  { value: 'newest',     label: 'Newest First' },
-  { value: 'popular',    label: 'Most Popular' },
-  { value: 'price-asc',  label: 'Price: Low to High' },
-  { value: 'price-desc', label: 'Price: High to Low' },
-  { value: 'rating',     label: 'Highest Rated' },
+  { value: 'newest',     labelKey: 'shop.sortNewest' },
+  { value: 'popular',    labelKey: 'shop.sortPopular' },
+  { value: 'price-asc',  labelKey: 'shop.sortPriceLow' },
+  { value: 'price-desc', labelKey: 'shop.sortPriceHigh' },
+  { value: 'rating',     labelKey: 'shop.sortRating' },
 ]
 
 const BRANDS = ['ASUS', 'Lenovo', 'Logitech', 'Corsair', 'TP-Link', 'Hikvision', 'Keychron']
 
 export default function ShopPage() {
   const params = useSearchParams()
-  const { lang } = useLangStore()
+  const { lang, t } = useLangStore()
 
   const [products, setProducts]       = useState<Product[]>([])
   const [filtered, setFiltered]       = useState<Product[]>([])
@@ -140,20 +140,20 @@ export default function ShopPage() {
   const hasActiveFilters = filters.category || filters.search || selectedBrands.length > 0 || minRating > 0
 
   const pageTitle = filters.category
-    ? categories.find(c => c.id === filters.category)?.name ?? 'Products'
+    ? categories.find(c => c.id === filters.category)?.name ?? t('shop.products')
     : filters.search
-    ? `Results for "${filters.search}"`
-    : 'All Products'
+    ? `${t('common.search')}: "${filters.search}"`
+    : t('nav.allProducts')
 
   // ── Filter Sidebar ─────────────────────────────────────────
   const FilterPanel = (
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="font-bold text-brand-navy">Filters</h3>
+        <h3 className="font-bold text-brand-navy">{t('shop.filters')}</h3>
         {hasActiveFilters && (
           <button onClick={clearFilters} className="text-xs text-brand-teal hover:text-brand-navy transition-colors">
-            Clear all
+            {t('shop.clearFilters')}
           </button>
         )}
       </div>
@@ -177,7 +177,7 @@ export default function ShopPage() {
                 onChange={() => setFilters(p => ({ ...p, category: undefined }))}
                 className="accent-brand-navy"
               />
-              <span className="text-sm text-gray-600">All Categories</span>
+              <span className="text-sm text-gray-600">{t('cat.all')}</span>
             </label>
             {categories.map(cat => (
               <label key={cat.id} className="flex items-center gap-2 cursor-pointer">
@@ -195,13 +195,13 @@ export default function ShopPage() {
         )}
       </div>
 
-      {/* Price Range */}
+      {/* {t('shop.priceRange')} */}
       <div className="border-b border-brand-border pb-4">
         <button
           onClick={() => toggleSection('price')}
           className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 mb-3"
         >
-          Price Range
+          {t('shop.priceRange')}
           {expandedSections.price ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
         </button>
         {expandedSections.price && (
@@ -228,7 +228,7 @@ export default function ShopPage() {
           onClick={() => toggleSection('brand')}
           className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 mb-3"
         >
-          Brand
+          {t('common.brand')}
           {expandedSections.brand ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
         </button>
         {expandedSections.brand && (
@@ -254,7 +254,7 @@ export default function ShopPage() {
           onClick={() => toggleSection('rating')}
           className="flex items-center justify-between w-full text-sm font-semibold text-gray-700 mb-3"
         >
-          Min. Rating
+          {t('shop.minRating')}
           {expandedSections.rating ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
         </button>
         {expandedSections.rating && (
@@ -269,7 +269,7 @@ export default function ShopPage() {
                   className="accent-brand-navy"
                 />
                 <span className="text-sm text-gray-600 flex items-center gap-1">
-                  {r === 0 ? 'All ratings' : (
+                  {r === 0 ? t('common.all') : (
                     <>
                       {'★'.repeat(r)} <span className="text-brand-muted">& up</span>
                     </>
@@ -291,7 +291,7 @@ export default function ShopPage() {
           <div>
             <h1 className="text-xl font-bold text-brand-navy">{pageTitle}</h1>
             <p className="text-sm text-brand-muted mt-0.5">
-              {loading ? 'Loading…' : `${filtered.length} product${filtered.length !== 1 ? 's' : ''} found`}
+              {loading ? t('common.loading') : `${filtered.length} ${filtered.length === 1 ? t('shop.result') : t('shop.results')}`}
             </p>
           </div>
 
@@ -303,7 +303,7 @@ export default function ShopPage() {
               className="text-sm border border-brand-border rounded-xl px-3 py-2 bg-white outline-none focus:border-brand-navy"
             >
               {SORT_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
               ))}
             </select>
 
@@ -312,7 +312,7 @@ export default function ShopPage() {
               onClick={() => setFiltersOpen(true)}
               className="md:hidden flex items-center gap-2 px-4 py-2 bg-white border border-brand-border rounded-xl text-sm font-medium"
             >
-              <FiFilter size={14} /> Filter
+              <FiFilter size={14} /> {t('shop.filters')}
               {hasActiveFilters && (
                 <span className="w-2 h-2 bg-brand-teal rounded-full" />
               )}
@@ -330,7 +330,7 @@ export default function ShopPage() {
 
           {/* Product grid */}
           <div className="flex-1">
-            <ProductGrid products={filtered} loading={loading} cols={3} />
+            <ProductGrid products={filtered} loading={loading} cols={3} emptyText={t('shop.noResults')} />
 
             {!loading && filtered.length > 0 && (
               <p className="text-center text-sm text-brand-muted mt-8">
@@ -360,7 +360,7 @@ export default function ShopPage() {
               className="fixed left-0 top-0 bottom-0 z-50 w-72 bg-white p-5 overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-5">
-                <h3 className="font-bold text-brand-navy">Filters</h3>
+                <h3 className="font-bold text-brand-navy">{t('shop.filters')}</h3>
                 <button onClick={() => setFiltersOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100">
                   <FiX size={18} />
                 </button>
