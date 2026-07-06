@@ -157,3 +157,18 @@ export interface DashboardStats {
   recentOrders:    Order[]
   lowStockProducts: Product[]
 }
+
+// ── Store Settings (admin-editable, stored in Firestore) ─────
+export interface StoreSettings {
+  shippingFee:        number   // EGP flat shipping fee
+  freeShippingAbove:  number   // free shipping threshold (0 = never free)
+  phone:              string
+  whatsapp:           string   // international format e.g. 201001381010
+  email:              string
+  address:            string
+  facebook?:          string
+  instagram?:         string
+  announcementAr?:    string   // top-bar announcement (Arabic)
+  announcementEn?:    string   // top-bar announcement (English)
+  updatedAt?:         any
+}
