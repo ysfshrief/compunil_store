@@ -20,7 +20,7 @@ import ProductGrid from '../../../components/ui/ProductGrid'
 import StarRating  from '../../../components/ui/StarRating'
 import { MOCK_PRODUCTS }   from '../../../lib/mockData'
 import { getProductById, getProductsByCategory, getProductReviews } from '../../../lib/firestore'
-import { formatEGP, discountPct, formatDate, cn } from '../../../lib/utils'
+import { formatEGP, discountPct, formatDate, cn, localName, localDesc } from '../../../lib/utils'
 import type { Product, Review } from '../../../types'
 import toast from 'react-hot-toast'
 
@@ -111,7 +111,7 @@ export default function ProductPage() {
     if (!inStock || !product) return
     addItem(product, qty)
     openCart()
-    toast.success(`${qty}× ${product.name} ${t('product.addedToCart')}`, {
+    toast.success(`${qty}× ${localName(product, lang)} ${t('product.addedToCart')}`, {
       icon: '🛒',
       style: { background: '#1B3A7A', color: '#fff', borderRadius: '12px' },
     })
@@ -258,7 +258,7 @@ export default function ProductPage() {
             </div>
 
             {/* Short description */}
-            <p className="text-gray-600 text-sm leading-relaxed">{product.description}</p>
+            <p className="text-gray-600 text-sm leading-relaxed">{localDesc(product, lang) || product.description}</p>
 
             {/* Quantity */}
             {inStock && (
@@ -341,7 +341,7 @@ export default function ProductPage() {
 
           <div className="p-6">
             {activeTab === 'desc' && (
-              <p className="text-gray-600 leading-relaxed">{product.description}</p>
+              <p className="text-gray-600 leading-relaxed">{localDesc(product, lang) || product.description}</p>
             )}
 
             {activeTab === 'specs' && (
