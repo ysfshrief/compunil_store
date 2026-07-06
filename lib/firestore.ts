@@ -3,7 +3,7 @@
 // ============================================================
 
 import {
-  collection, doc, getDocs, getDoc, addDoc, updateDoc,
+  collection, doc, getDocs, getDoc, addDoc, updateDoc, setDoc,
   deleteDoc, query, where, orderBy, limit, startAfter,
   onSnapshot, serverTimestamp, increment,
   QueryConstraint, DocumentSnapshot,
