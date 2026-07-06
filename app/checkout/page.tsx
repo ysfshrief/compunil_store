@@ -28,7 +28,7 @@ type Step = 1 | 2 | 3
 export default function CheckoutPage() {
   const { t } = useLangStore()
   const router = useRouter()
-  const { items, total, subtotal, clearCart } = useCartStore()
+  const { items, total, subtotal, shipping, clearCart } = useCartStore()
   const { user, initialized } = useAuthStore()
   const [step, setStep] = useState<Step>(1)
   const [loading, setLoading] = useState(false)
@@ -122,7 +122,7 @@ export default function CheckoutPage() {
         userName:  String(form.name),
         items:     orderItems,
         subtotal:  Number(subtotal()),
-        shipping:  0,
+        shipping:  Number(shipping()),
         total:     Number(total()),
         status:    'pending' as const,
         address: {
@@ -373,8 +373,12 @@ export default function CheckoutPage() {
                 <span>{formatEGP(subtotal())}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>Shipping</span>
-                <span className="text-green-600 font-medium">Free</span>
+                <span>{t('cart.shipping')}</span>
+                {shipping() === 0 ? (
+                  <span className="text-green-600 font-medium">{t('cart.free')}</span>
+                ) : (
+                  <span>{formatEGP(shipping())}</span>
+                )}
               </div>
               <div className="flex justify-between font-bold text-brand-navy text-base pt-1 border-t border-gray-100">
                 <span>Total</span>
