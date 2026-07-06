@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useEffect } from 'react'
+import { useSettingsStore } from '../store/settingsStore'
 import { Toaster } from 'react-hot-toast'
 import Header     from '../components/layout/Header'
 import Footer     from '../components/layout/Footer'
@@ -38,6 +39,12 @@ function CartMigration() {
   return null
 }
 
+function SettingsLoader() {
+  const load = useSettingsStore(s => s.load)
+  useEffect(() => { load() }, [load])
+  return null
+}
+
 function DirSetter() {
   const { lang } = useLangStore()
   useEffect(() => {
@@ -57,6 +64,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <AuthInitializer />
       <CartMigration />
       <DirSetter />
+      <SettingsLoader />
 
       <Toaster
         position="top-right"
