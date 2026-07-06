@@ -12,7 +12,7 @@ import { useLangStore }  from '../../store/langStore'
 import { formatEGP } from '../../lib/utils'
 
 export default function CartPage() {
-  const { items, removeItem, updateQty, clearCart, subtotal, total } = useCartStore()
+  const { items, removeItem, updateQty, clearCart, subtotal, total, shipping } = useCartStore()
   const { lang, t } = useLangStore()
 
   // Guard: filter out corrupted items from old localStorage format
@@ -193,7 +193,11 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>{t('cart.shipping')}</span>
-                  <span className="text-green-600 font-semibold">Free</span>
+                  {shipping() === 0 ? (
+                    <span className="text-green-600 font-semibold">{t('cart.free')}</span>
+                  ) : (
+                    <span className="font-semibold">{formatEGP(shipping())}</span>
+                  )}
                 </div>
                 <div className="flex justify-between font-bold text-brand-navy text-base pt-2 border-t border-gray-100">
                   <span>{t('cart.total')}</span>
