@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiPlus, FiEdit2, FiTrash2, FiUpload, FiX, FiSave, FiTag } from 'react-icons/fi';
+import { driveImageUrl } from '@/lib/utils';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '@/lib/firestore';
 import { uploadCategoryImage } from '@/lib/storage';
 import type { Category } from '@/types';
@@ -16,7 +17,7 @@ export default function AdminCategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
-  const [form, setForm] = useState({ name: '', slug: '', icon: '💻', description: '' });
+  const [form, setForm] = useState({ name: '', nameAr: '', slug: '', icon: '💻', description: '', imageUrl: '' });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
   const [saving, setSaving] = useState(false);
@@ -39,7 +40,7 @@ export default function AdminCategoriesPage() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ name: '', slug: '', icon: '💻', description: '' });
+    setForm({ name: '', nameAr: '', slug: '', icon: '💻', description: '', imageUrl: '' });
     setImageFile(null);
     setImagePreview('');
     setShowModal(true);
@@ -51,6 +52,8 @@ export default function AdminCategoriesPage() {
       name: cat.name,
       slug: cat.slug || '',
       icon: cat.icon || '💻',
+      nameAr: cat.nameAr ?? '',
+      imageUrl: cat.imageUrl ?? '',
       description: cat.description || '',
     });
     setImagePreview(cat.image || '');
@@ -88,6 +91,8 @@ export default function AdminCategoriesPage() {
         name: form.name.trim(),
         slug: form.slug || form.name.toLowerCase().replace(/\s+/g, '-'),
         icon: form.icon,
+        nameAr: form.nameAr.trim(),
+        imageUrl: form.imageUrl ? driveImageUrl(form.imageUrl.trim()) : '',
         description: form.description.trim(),
         image,
         updatedAt: new Date(),
@@ -261,13 +266,37 @@ export default function AdminCategoriesPage() {
                   </div>
                 </div>
 
-                {/* Name */}
+                {/* Name EN */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Name *</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Name (English) *</label>
                   <input
                     value={form.name}
                     onChange={e => handleNameChange(e.target.value)}
                     placeholder="e.g. Laptops"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                  />
+                </div>
+
+                {/* Name AR */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">الاسم (عربي) *</label>
+                  <input
+                    value={form.nameAr}
+                    onChange={e => setForm(f => ({ ...f, nameAr: e.target.value }))}
+                    placeholder="مثال: لابتوبات"
+                    dir="rtl"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                  />
+                </div>
+
+                {/* Image URL */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">رابط صورة (اختياري — يدعم Google Drive)</label>
+                  <input
+                    value={form.imageUrl}
+                    onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
+                    placeholder="https://drive.google.com/file/d/..."
+                    dir="ltr"
                     className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal"
                   />
                 </div>
