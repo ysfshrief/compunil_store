@@ -7,11 +7,13 @@ import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiArrowLeft } from 'react-icon
 import { FcGoogle } from 'react-icons/fc';
 import { motion } from 'framer-motion';
 import { registerWithEmail, loginWithGoogle } from '@/lib/auth';
+import { useLangStore } from '@/store/langStore';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useLangStore();
   const { user } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -135,7 +137,7 @@ export default function RegisterPage() {
               <div className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-white px-3 text-xs text-gray-400">or register with email</span>
+              <span className="bg-white px-3 text-xs text-gray-400">{t('auth.orRegisterEmail')}</span>
             </div>
           </div>
 
@@ -245,9 +247,9 @@ export default function RegisterPage() {
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-5">
-            Already have an account?{' '}
+            {t('auth.hasAccount')}{' '}
             <Link href="/auth/login" className="text-brand-teal font-semibold hover:underline">
-              Sign in
+              {t('auth.signInLink')}
             </Link>
           </p>
         </motion.div>
