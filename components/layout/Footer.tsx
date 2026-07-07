@@ -7,35 +7,37 @@ import Link from 'next/link'
 import { FiFacebook, FiInstagram, FiMail, FiPhone, FiMapPin, FiMessageCircle } from 'react-icons/fi'
 
 import { useSettingsStore } from '../../store/settingsStore'
+import { useLangStore } from '../../store/langStore'
 
 export default function Footer() {
   const { settings } = useSettingsStore()
+  const { lang, t } = useLangStore()
   const PHONE    = settings.phone
   const WHATSAPP = settings.whatsapp
   const EMAIL    = settings.email
 
   const links = {
     shop: [
-      { href: '/shop?category=laptops',    label: 'Laptops' },
-      { href: '/shop?category=components', label: 'PC Components' },
-      { href: '/shop?category=gaming',     label: 'Gaming Accessories' },
-      { href: '/shop?category=networking', label: 'Networking' },
-      { href: '/shop?category=cctv',       label: 'CCTV Cameras' },
-      { href: '/shop',                     label: 'All Products' },
+      { href: '/shop?category=laptops',    label: t('cat.laptops') },
+      { href: '/shop?category=components', label: t('cat.components') },
+      { href: '/shop?category=gaming',     label: t('cat.gaming') },
+      { href: '/shop?category=networking', label: t('cat.networking') },
+      { href: '/shop?category=cctv',       label: t('cat.cctv') },
+      { href: '/shop',                     label: t('nav.allProducts') },
     ],
     account: [
-      { href: '/auth/login',      label: 'Sign In' },
-      { href: '/auth/register',   label: 'Create Account' },
-      { href: '/account/orders',  label: 'My Orders' },
-      { href: '/wishlist',        label: 'Wishlist' },
-      { href: '/cart',            label: 'My Cart' },
+      { href: '/auth/login',      label: t('auth.login') },
+      { href: '/auth/register',   label: t('auth.register') },
+      { href: '/account/orders',  label: t('account.myOrders') },
+      { href: '/wishlist',        label: t('nav.wishlist') },
+      { href: '/cart',            label: t('nav.cart') },
     ],
     support: [
-      { href: '/terms',    label: 'Terms of Service' },
-      { href: '/privacy',  label: 'Privacy Policy' },
-      { href: `https://wa.me/${WHATSAPP}`, label: 'WhatsApp Support', external: true },
-      { href: `tel:${PHONE}`,              label: 'Call Us', external: true },
-      { href: `mailto:${EMAIL}`,           label: 'Email Us', external: true },
+      { href: '/terms',    label: lang === 'ar' ? 'الشروط والأحكام' : 'Terms of Service' },
+      { href: '/privacy',  label: lang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' },
+      { href: `https://wa.me/${WHATSAPP}`, label: lang === 'ar' ? 'دعم واتساب' : 'WhatsApp Support', external: true },
+      { href: `tel:${PHONE}`,              label: lang === 'ar' ? 'اتصل بنا' : 'Call Us', external: true },
+      { href: `mailto:${EMAIL}`,           label: lang === 'ar' ? 'راسلنا' : 'Email Us', external: true },
     ],
   }
 
@@ -53,7 +55,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-sm text-gray-400 mb-5 leading-relaxed">
-              Egypt's premier tech store for laptops, PC components, gaming accessories, networking equipment, and CCTV systems.
+              {lang === 'ar' ? 'متجر مصر الأول للابتوبات ومكونات الكمبيوتر وإكسسوارات الألعاب ومعدات الشبكات وأنظمة المراقبة.' : "Egypt's premier tech store for laptops, PC components, gaming accessories, networking equipment, and CCTV systems."}
             </p>
             <div className="space-y-2.5 text-sm">
               <a href={`tel:${PHONE}`} className="flex items-center gap-2.5 hover:text-white transition-colors">
@@ -79,7 +81,7 @@ export default function Footer() {
 
           {/* Shop links */}
           <div>
-            <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wide">Shop</h4>
+            <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wide">{t('nav.shop')}</h4>
             <ul className="space-y-2.5">
               {links.shop.map(l => (
                 <li key={l.href + l.label}>
@@ -93,7 +95,7 @@ export default function Footer() {
 
           {/* Account */}
           <div>
-            <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wide">Account</h4>
+            <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wide">{t('nav.account')}</h4>
             <ul className="space-y-2.5">
               {links.account.map(l => (
                 <li key={l.href + l.label}>
@@ -107,7 +109,7 @@ export default function Footer() {
 
           {/* Support */}
           <div>
-            <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wide">Support</h4>
+            <h4 className="text-white font-semibold text-sm mb-4 uppercase tracking-wide">{lang === 'ar' ? 'الدعم' : 'Support'}</h4>
             <ul className="space-y-2.5">
               {links.support.map(l => (
                 <li key={l.href + l.label}>
@@ -135,8 +137,8 @@ export default function Footer() {
         <div className="bg-brand-navy/50 rounded-2xl p-5 sm:p-6 mb-8">
           <div className="flex flex-col gap-4">
             <div>
-              <h4 className="text-white font-semibold mb-1">Stay Updated</h4>
-              <p className="text-sm text-gray-400">Get exclusive deals and tech news delivered to your inbox.</p>
+              <h4 className="text-white font-semibold mb-1">{lang === 'ar' ? 'ابق على اطلاع' : 'Stay Updated'}</h4>
+              <p className="text-sm text-gray-400">{lang === 'ar' ? 'احصل على عروض حصرية وأخبار التكنولوجيا في بريدك.' : 'Get exclusive deals and tech news delivered to your inbox.'}</p>
             </div>
             <form
               className="flex flex-col xs:flex-row gap-2 w-full"
@@ -144,14 +146,14 @@ export default function Footer() {
             >
               <input
                 type="email"
-                placeholder="your@email.com"
+                placeholder={lang === 'ar' ? 'بريدك الإلكتروني' : 'your@email.com'}
                 className="flex-1 min-w-0 px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-sm text-white placeholder-gray-500 outline-none focus:border-brand-teal"
               />
               <button
                 type="submit"
                 className="px-5 py-2.5 bg-brand-teal hover:bg-brand-tealdk rounded-lg text-white text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0"
               >
-                Subscribe
+                {lang === 'ar' ? 'اشترك' : 'Subscribe'}
               </button>
             </form>
           </div>
@@ -160,7 +162,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/10">
           <p className="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
-            © {new Date().getFullYear()} Compunil Electronics Supply Solutions. All rights reserved.
+            © {new Date().getFullYear()} Compunil Electronics Supply Solutions. {lang === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}
           </p>
           <div className="flex items-center gap-3">
             <a href={settings.facebook || '#'} target={settings.facebook ? '_blank' : undefined} rel="noopener noreferrer" aria-label="Facebook" className="w-8 h-8 rounded-full bg-white/10 hover:bg-brand-teal flex items-center justify-center transition-colors">
@@ -179,7 +181,7 @@ export default function Footer() {
         <div className="mt-6 pt-5 border-t border-white/5 flex flex-col items-center gap-3">
           <img src="/joe-logo.png" alt="Joe Industries" className="h-7 object-contain opacity-80" />
           <p className="text-xs text-gray-500 text-center">
-            Developed &amp; designed by:{' '}
+            {lang === 'ar' ? 'تطوير وتصميم:' : 'Developed & designed by:'}{' '}
             <a
               href={`mailto:${EMAIL}`}
               className="text-brand-teal hover:text-white font-medium transition-colors"
