@@ -51,8 +51,6 @@ export interface ProductSpec {
 }
 
 export interface Product {
-  nameAr?:        string   // Arabic name (shown when lang=ar)
-  descriptionAr?: string   // Arabic description
   id:              string
   name:            string
   nameAr?:         string
