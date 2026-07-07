@@ -127,7 +127,7 @@ export default function ProductPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
         <div className="text-5xl">😕</div>
-        <h2 className="text-xl font-bold text-brand-navy">Product not found</h2>
+        <h2 className="text-xl font-bold text-brand-navy">{lang === 'ar' ? 'المنتج غير موجود' : 'Product not found'}</h2>
         <Link href="/shop" className="px-6 py-3 bg-brand-navy text-white rounded-xl">
           Back to Shop
         </Link>
