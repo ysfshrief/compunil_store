@@ -173,7 +173,7 @@ export default function CartPage() {
 
             {/* Summary */}
             <div className="bg-white rounded-xl border border-gray-100 p-5 sticky top-24">
-              <h3 className="font-bold text-brand-navy mb-4">Order Summary</h3>
+              <h3 className="font-bold text-brand-navy mb-4">{t('checkout.orderSummary')}</h3>
 
               <div className="space-y-3 text-sm">
                 {validItems.map(item => (
@@ -214,7 +214,7 @@ export default function CartPage() {
 
               <div className="mt-3 flex items-center justify-center gap-2 text-xs text-gray-400">
                 <span>🔒</span>
-                <span>Secure checkout · Cash on delivery</span>
+                <span>{lang === 'ar' ? 'دفع آمن · الدفع عند الاستلام' : 'Secure checkout · Cash on delivery'}</span>
               </div>
             </div>
           </div>
