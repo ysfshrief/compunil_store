@@ -15,12 +15,18 @@ import toast from 'react-hot-toast';
 
 const STATUS_STEPS = ['pending', 'processing', 'shipped', 'delivered'];
 
+const STATUS_AR: Record<string, string> = {
+  pending: 'قيد الانتظار', confirmed: 'تم التأكيد', processing: 'قيد التجهيز',
+  shipped: 'تم الشحن', delivered: 'تم التسليم', cancelled: 'ملغي',
+};
+
 function OrderStatusTracker({ status }: { status: string }) {
+  const { lang } = useLangStore();
   if (status === 'cancelled') {
     return (
       <div className="flex items-center gap-2 py-2">
         <span className="w-3 h-3 rounded-full bg-red-500 flex-shrink-0" />
-        <span className="text-sm font-medium text-red-600">Order Cancelled</span>
+        <span className="text-sm font-medium text-red-600">{lang === 'ar' ? 'الطلب ملغي' : 'Order Cancelled'}</span>
       </div>
     );
   }
@@ -40,7 +46,7 @@ function OrderStatusTracker({ status }: { status: string }) {
                 {done && <div className="w-2 h-2 rounded-full bg-white" />}
               </div>
               <span className={`text-xs mt-1 font-medium capitalize ${done ? 'text-brand-teal' : 'text-gray-400'}`}>
-                {step}
+                {lang === 'ar' ? STATUS_AR[step] : step}
               </span>
             </div>
             {!last && (
@@ -54,6 +60,7 @@ function OrderStatusTracker({ status }: { status: string }) {
 }
 
 function OrderCard({ order }: { order: Order }) {
+  const { lang, t } = useLangStore();
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -76,7 +83,7 @@ function OrderCard({ order }: { order: Order }) {
               <Link href={`/account/orders/${order.id}`} onClick={e => e.stopPropagation()}
                 className="font-mono text-sm font-bold text-brand-teal hover:underline">{order.id.slice(0, 12)}</Link>
               <span className={`px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${statusColor(order.status)}`}>
-                {order.status}
+                {lang === 'ar' ? STATUS_AR[order.status] : order.status}
               </span>
             </div>
             <div className="text-xs text-gray-400 mt-0.5">
@@ -105,13 +112,13 @@ function OrderCard({ order }: { order: Order }) {
             <div className="px-5 pb-5 space-y-5 border-t border-gray-100 pt-4">
               {/* Tracker */}
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Order Status</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{lang === 'ar' ? 'حالة الطلب' : 'Order Status'}</p>
                 <OrderStatusTracker status={order.status} />
               </div>
 
               {/* Items */}
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Items</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{lang === 'ar' ? 'المنتجات' : 'Items'}</p>
                 <div className="space-y-2">
                   {order.items.map((item, i) => (
                     <div key={i} className="flex items-center gap-3">
@@ -129,7 +136,7 @@ function OrderCard({ order }: { order: Order }) {
               {/* Delivery */}
               {order.address && (
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Delivery Address</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{lang === 'ar' ? 'عنوان التوصيل' : 'Delivery Address'}</p>
                   <p className="text-sm text-gray-600">
                     {order.address.street}, {order.address.city}, {order.address.governorate}
                   </p>
@@ -138,7 +145,7 @@ function OrderCard({ order }: { order: Order }) {
 
               {/* Total */}
               <div className="flex justify-between items-center border-t border-gray-100 pt-3">
-                <span className="text-sm font-semibold text-gray-600">Order Total</span>
+                <span className="text-sm font-semibold text-gray-600">{lang === 'ar' ? 'إجمالي الطلب' : 'Order Total'}</span>
                 <span className="text-base font-bold text-brand-navy">{formatEGP(order.total)}</span>
               </div>
             </div>
@@ -152,7 +159,7 @@ function OrderCard({ order }: { order: Order }) {
 export default function AccountOrdersPage() {
   const router = useRouter();
   const { user, initialized } = useAuthStore();
-  const { t } = useLangStore();
+  const { lang, t } = useLangStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
