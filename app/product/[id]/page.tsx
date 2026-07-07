@@ -16,10 +16,12 @@ import {
 import { useCartStore }     from '../../../store/cartStore'
 import { useWishlistStore } from '../../../store/wishlistStore'
 import { useLangStore }     from '../../../store/langStore'
+import { useRecentStore }   from '../../../store/recentStore'
+import { useAuthStore }     from '../../../store/authStore'
 import ProductGrid from '../../../components/ui/ProductGrid'
 import StarRating  from '../../../components/ui/StarRating'
 import { MOCK_PRODUCTS }   from '../../../lib/mockData'
-import { getProductById, getProductsByCategory, getProductReviews } from '../../../lib/firestore'
+import { getProductById, getProductsByCategory, getProductReviews, addReview } from '../../../lib/firestore'
 import { formatEGP, discountPct, formatDate, cn, localName, localDesc } from '../../../lib/utils'
 import type { Product, Review } from '../../../types'
 import toast from 'react-hot-toast'
@@ -36,6 +38,35 @@ export default function ProductPage() {
   const [qty, setQty]           = useState(1)
   const [activeTab, setActiveTab] = useState<'specs' | 'reviews' | 'desc'>('desc')
   const [reviews, setReviews]   = useState<Review[]>([])
+  const addRecent = useRecentStore(s => s.add)
+  const { user } = useAuthStore()
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewComment, setReviewComment] = useState('')
+  const [submittingReview, setSubmittingReview] = useState(false)
+
+  async function submitReview() {
+    if (!user) { toast.error(lang === 'ar' ? 'سجّل الدخول لكتابة تقييم' : 'Sign in to write a review'); return }
+    if (!product) return
+    if (reviewComment.trim().length < 3) { toast.error(lang === 'ar' ? 'اكتب تعليقاً' : 'Write a comment'); return }
+    setSubmittingReview(true)
+    try {
+      await addReview({
+        productId: product.id,
+        userId:    user.id,
+        userName:  user.name || 'Customer',
+        rating:    reviewRating,
+        comment:   reviewComment.trim(),
+      } as any)
+      toast.success(lang === 'ar' ? 'شكراً لتقييمك! ⭐' : 'Thanks for your review! ⭐')
+      setReviewComment('')
+      const revs = await getProductReviews(product.id).catch(() => [])
+      setReviews(revs)
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed')
+    } finally {
+      setSubmittingReview(false)
+    }
+  }
 
   const addItem  = useCartStore(s => s.addItem)
   const openCart = useCartStore(s => s.openCart)
@@ -49,6 +80,7 @@ export default function ProductPage() {
         const found = await getProductById(id)
         if (found) {
           setProduct(found)
+          addRecent(found.id)
           const [rel, revs] = await Promise.all([
             getProductsByCategory(found.categoryId, 5),
             getProductReviews(id).catch(() => []),
@@ -368,6 +400,30 @@ export default function ProductPage() {
                     <StarRating rating={product.rating} size={16} />
                     <div className="text-xs text-brand-muted mt-1">{product.reviewCount} reviews</div>
                   </div>
+                </div>
+
+                {/* Write a review */}
+                <div className="border border-brand-border rounded-xl p-4 mb-6">
+                  <h4 className="font-semibold text-brand-navy text-sm mb-3">{t('product.writeReview')}</h4>
+                  <div className="flex items-center gap-1 mb-3">
+                    {[1, 2, 3, 4, 5].map(n => (
+                      <button key={n} type="button" onClick={() => setReviewRating(n)}
+                        className={`text-2xl transition-transform hover:scale-110 ${n <= reviewRating ? 'text-amber-400' : 'text-gray-300'}`}>
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={reviewComment}
+                    onChange={e => setReviewComment(e.target.value)}
+                    rows={3}
+                    placeholder={lang === 'ar' ? 'شاركنا رأيك في المنتج…' : 'Share your experience…'}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal resize-none mb-3"
+                  />
+                  <button onClick={submitReview} disabled={submittingReview}
+                    className="px-5 py-2.5 bg-brand-navy text-white text-sm font-semibold rounded-xl hover:bg-brand-teal transition-colors disabled:opacity-50">
+                    {submittingReview ? '…' : (lang === 'ar' ? 'إرسال التقييم' : 'Submit Review')}
+                  </button>
                 </div>
 
                 {/* Review list */}

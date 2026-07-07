@@ -7,11 +7,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiCheck, FiChevronRight, FiLock, FiMapPin, FiUser, FiPhone } from 'react-icons/fi'
+import { FiCheck, FiChevronRight, FiLock, FiMapPin, FiUser, FiPhone, FiTag } from 'react-icons/fi'
 import { useCartStore } from '@/store/cartStore'
 import { useLangStore }  from '../../store/langStore'
 import { useAuthStore } from '@/store/authStore'
-import { createOrder } from '@/lib/firestore'
+import { createOrder, validateCoupon, incrementCouponUsage, saveUserAddress, getUserProfile } from '@/lib/firestore'
 import { formatEGP } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
@@ -26,12 +26,31 @@ const EGYPT_GOVERNORATES = [
 type Step = 1 | 2 | 3
 
 export default function CheckoutPage() {
-  const { t } = useLangStore()
+  const { lang, t } = useLangStore()
   const router = useRouter()
   const { items, total, subtotal, shipping, clearCart } = useCartStore()
   const { user, initialized } = useAuthStore()
+
+  // Prefill saved address from the user profile
+  useEffect(() => {
+    if (!user) return
+    getUserProfile(user.id).then(p => {
+      const a = p?.savedAddress
+      if (!a) return
+      setForm(f => ({
+        ...f,
+        phone:       f.phone       || a.phone       || '',
+        street:      f.street      || a.street      || '',
+        city:        f.city        || a.city        || '',
+        governorate: f.governorate || a.governorate || '',
+      }))
+    }).catch(() => {})
+  }, [user])
   const [step, setStep] = useState<Step>(1)
   const [loading, setLoading] = useState(false)
+  const [couponCode, setCouponCode] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
+  const [couponLoading, setCouponLoading] = useState(false)
   const [orderId, setOrderId] = useState<string | null>(null)
 
   const validItems = items.filter((i: any) => i?.product?.id)
@@ -103,6 +122,38 @@ export default function CheckoutPage() {
     return Object.keys(e).length === 0
   }
 
+  const discount = appliedCoupon
+    ? appliedCoupon.type === 'percent'
+      ? Math.round(subtotal() * appliedCoupon.value / 100)
+      : Math.min(appliedCoupon.value, subtotal())
+    : 0
+  const finalTotal = Math.max(0, subtotal() + shipping() - discount)
+
+  async function applyCoupon() {
+    const code = couponCode.trim()
+    if (!code) return
+    setCouponLoading(true)
+    try {
+      const res = await validateCoupon(code, subtotal())
+      if (res.coupon) {
+        setAppliedCoupon(res.coupon)
+        toast.success(lang === 'ar' ? 'تم تطبيق الكوبون 🎉' : 'Coupon applied 🎉')
+      } else {
+        const msgs: Record<string, [string, string]> = {
+          notFound:     ['الكوبون غير موجود', 'Coupon not found'],
+          inactive:     ['الكوبون موقوف', 'Coupon is inactive'],
+          expired:      ['الكوبون منتهي', 'Coupon expired'],
+          limitReached: ['وصل الكوبون لحد الاستخدام', 'Usage limit reached'],
+          minOrder:     ['قيمة الطلب أقل من الحد الأدنى', 'Order below minimum'],
+        }
+        const [ar, en] = msgs[res.error ?? 'notFound'] ?? msgs.notFound
+        toast.error(lang === 'ar' ? ar : en)
+      }
+    } finally {
+      setCouponLoading(false)
+    }
+  }
+
   async function placeOrder() {
     if (!user) return
     setLoading(true)
@@ -123,7 +174,9 @@ export default function CheckoutPage() {
         items:     orderItems,
         subtotal:  Number(subtotal()),
         shipping:  Number(shipping()),
-        total:     Number(total()),
+        total:     Number(finalTotal),
+        discount:  Number(discount),
+        couponCode: appliedCoupon?.code ?? '',
         status:    'pending' as const,
         address: {
           id:          '1',
@@ -138,6 +191,12 @@ export default function CheckoutPage() {
       }
 
       const id = await createOrder(orderData)
+      if (appliedCoupon) incrementCouponUsage(appliedCoupon.id)
+      // Save the address for next time
+      saveUserAddress(user.id, {
+        phone: form.phone, street: form.street,
+        city: form.city, governorate: form.governorate,
+      })
       setOrderId(id)
       clearCart()
       toast.success(t('checkout.success'))
@@ -367,11 +426,46 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
+            {/* Coupon */}
+            <div className="mb-4">
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+                  <span className="text-sm font-mono font-bold text-green-700 flex items-center gap-1.5">
+                    <FiTag size={14} /> {appliedCoupon.code}
+                  </span>
+                  <button onClick={() => { setAppliedCoupon(null); setCouponCode('') }}
+                    className="text-xs text-red-500 hover:underline">
+                    {lang === 'ar' ? 'إزالة' : 'Remove'}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    value={couponCode}
+                    onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder={lang === 'ar' ? 'كود الخصم' : 'Coupon code'}
+                    dir="ltr"
+                    className="flex-1 min-w-0 px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-teal"
+                  />
+                  <button onClick={applyCoupon} disabled={couponLoading || !couponCode.trim()}
+                    className="px-4 py-2.5 bg-brand-navy text-white text-sm font-semibold rounded-xl hover:bg-brand-teal transition-colors disabled:opacity-40 flex-shrink-0">
+                    {couponLoading ? '…' : (lang === 'ar' ? 'تطبيق' : 'Apply')}
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="border-t border-gray-100 pt-3 space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>{t('cart.subtotal')}</span>
                 <span>{formatEGP(subtotal())}</span>
               </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-green-600 font-medium">
+                  <span>{lang === 'ar' ? 'الخصم' : 'Discount'}</span>
+                  <span>-{formatEGP(discount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-gray-600">
                 <span>{t('cart.shipping')}</span>
                 {shipping() === 0 ? (
@@ -382,7 +476,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between font-bold text-brand-navy text-base pt-1 border-t border-gray-100">
                 <span>{t('cart.total')}</span>
-                <span>{formatEGP(total())}</span>
+                <span>{formatEGP(finalTotal)}</span>
               </div>
             </div>
           </div>

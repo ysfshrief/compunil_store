@@ -11,7 +11,7 @@ import {
 import { db } from './firebase'
 import type {
   Product, Order, User, Category, Review,
-  ProductFilters, OrderStatus, DashboardStats, UserRole, StoreSettings, HeroSlide } from '../types'
+  ProductFilters, OrderStatus, DashboardStats, UserRole, StoreSettings, HeroSlide, Coupon } from '../types'
 
 // ── Collection helpers ───────────────────────────────────────
 const COL = {
@@ -335,6 +335,83 @@ export async function saveHeroSlide(slide: Partial<HeroSlide> & { id?: string })
 
 export async function deleteHeroSlide(id: string): Promise<void> {
   await deleteDoc(doc(db, 'heroSlides', id))
+}
+
+
+// ── Single Order (for the customer order-details page) ───────
+export async function getOrderById(id: string): Promise<Order | null> {
+  const snap = await getDoc(doc(db, 'orders', id))
+  return snap.exists() ? ({ id: snap.id, ...snap.data() } as Order) : null
+}
+
+// ── User profile (saved address prefill) ─────────────────────
+export async function getUserProfile(uid: string): Promise<User | null> {
+  const snap = await getDoc(doc(db, 'users', uid))
+  return snap.exists() ? ({ id: snap.id, ...snap.data() } as User) : null
+}
+
+export async function saveUserAddress(uid: string, data: {
+  phone?: string; street?: string; city?: string; governorate?: string
+}): Promise<void> {
+  try {
+    await setDoc(doc(db, 'users', uid), { savedAddress: data }, { merge: true })
+  } catch (err) { console.warn('[Compunil] saveUserAddress:', err) }
+}
+
+// ── Cart / Wishlist cloud sync ────────────────────────────────
+export async function saveUserCart(uid: string, items: any[], wishlistIds: string[]): Promise<void> {
+  try {
+    await setDoc(doc(db, 'users', uid), {
+      cloudCart: items.map(i => ({ productId: i.product.id, quantity: i.quantity })),
+      cloudWishlist: wishlistIds,
+      cartUpdatedAt: serverTimestamp(),
+    }, { merge: true })
+  } catch (err) { console.warn('[Compunil] saveUserCart:', err) }
+}
+
+export async function loadUserCart(uid: string): Promise<{ cart: { productId: string; quantity: number }[]; wishlist: string[] } | null> {
+  try {
+    const snap = await getDoc(doc(db, 'users', uid))
+    if (!snap.exists()) return null
+    const d = snap.data() as any
+    return { cart: d.cloudCart ?? [], wishlist: d.cloudWishlist ?? [] }
+  } catch { return null }
+}
+
+// ── Coupons ───────────────────────────────────────────────────
+export async function getCoupons(): Promise<Coupon[]> {
+  const snap = await getDocs(query(collection(db, 'coupons'), orderBy('createdAt', 'desc')))
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as Coupon))
+}
+
+export async function saveCoupon(coupon: Partial<Coupon> & { id?: string }): Promise<string> {
+  if (coupon.id) {
+    const { id, ...data } = coupon
+    await updateDoc(doc(db, 'coupons', id), { ...data, updatedAt: serverTimestamp() })
+    return id
+  }
+  const ref = await addDoc(collection(db, 'coupons'), { ...coupon, usedCount: 0, createdAt: serverTimestamp() })
+  return ref.id
+}
+
+export async function deleteCoupon(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'coupons', id))
+}
+
+/** Validate a coupon code. Returns the coupon or an error key. */
+export async function validateCoupon(code: string, subtotal: number): Promise<{ coupon?: Coupon; error?: string }> {
+  const snap = await getDocs(query(collection(db, 'coupons'), where('code', '==', code.toUpperCase().trim()), limit(1)))
+  if (snap.empty) return { error: 'notFound' }
+  const coupon = { id: snap.docs[0].id, ...snap.docs[0].data() } as Coupon
+  if (!coupon.active) return { error: 'inactive' }
+  if (coupon.expiresAt && (coupon.expiresAt.toDate?.() ?? new Date(coupon.expiresAt)) < new Date()) return { error: 'expired' }
+  if (coupon.usageLimit && (coupon.usedCount ?? 0) >= coupon.usageLimit) return { error: 'limitReached' }
+  if (coupon.minOrder && subtotal < coupon.minOrder) return { error: 'minOrder' }
+  return { coupon }
+}
+
+export async function incrementCouponUsage(id: string): Promise<void> {
+  try { await updateDoc(doc(db, 'coupons', id), { usedCount: increment(1) }) } catch {}
 }
 
 // ── Dashboard Stats ──────────────────────────────────────────

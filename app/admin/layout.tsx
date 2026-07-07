@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   FiGrid, FiPackage, FiShoppingBag, FiUsers, FiTag,
-  FiLogOut, FiMenu, FiX, FiChevronRight, FiBell, FiActivity, FiSettings, FiSliders, FiImage } from 'react-icons/fi';
+  FiLogOut, FiMenu, FiX, FiChevronRight, FiBell, FiActivity, FiSettings, FiSliders, FiImage, FiPercent } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
 import { signOut } from '@/lib/auth';
@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { href: '/admin/users', label: 'Users', icon: FiUsers },
   { href: '/admin/categories', label: 'Categories', icon: FiTag },
   { href: '/admin/banners', label: 'Banners', icon: FiImage },
+  { href: '/admin/coupons', label: 'Coupons', icon: FiPercent },
   { href: '/admin/store', label: 'Store Settings', icon: FiSliders },
   { href: '/admin/visitors', label: 'Visitors', icon: FiActivity },
   { href: '/admin/settings', label: 'Settings', icon: FiSettings },

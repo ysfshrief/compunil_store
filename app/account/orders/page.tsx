@@ -73,7 +73,8 @@ function OrderCard({ order }: { order: Order }) {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-bold text-brand-navy">{order.id}</span>
+              <Link href={`/account/orders/${order.id}`} onClick={e => e.stopPropagation()}
+                className="font-mono text-sm font-bold text-brand-teal hover:underline">{order.id.slice(0, 12)}</Link>
               <span className={`px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${statusColor(order.status)}`}>
                 {order.status}
               </span>

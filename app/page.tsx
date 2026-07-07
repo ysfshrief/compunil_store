@@ -15,6 +15,7 @@ import { getFeaturedProducts, getProducts, getCategories, getHeroSlides } from '
 import type { Product, Category, HeroSlide } from '../types'
 import { useLangStore } from '../store/langStore'
 import { driveImageUrl, localName } from '../lib/utils'
+import { useRecentStore } from '../store/recentStore'
 
 const HERO_SLIDES = [
   {
@@ -44,6 +45,8 @@ const PERKS = [
 export default function HomePage() {
   const { lang, t } = useLangStore()
   const [dbSlides, setDbSlides] = useState<HeroSlide[]>([])
+  const [allProducts, setAllProducts] = useState<Product[]>([])
+  const recentIds = useRecentStore(s => s.ids)
   const [slide, setSlide]         = useState(0)
   const [featured, setFeatured]   = useState<Product[]>([])
   const [deals, setDeals]         = useState<Product[]>([])
@@ -62,6 +65,7 @@ export default function HomePage() {
           getHeroSlides(true),
         ])
         setDbSlides(slides)
+        setAllProducts(saleRes.products)
         const onSale = saleRes.products.filter(p => p.isOnSale).slice(0, 4)
 
         setFeatured(feat.length ? feat : MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 8))
@@ -251,6 +255,28 @@ export default function HomePage() {
         />
         <ProductGrid products={deals} loading={loading} cols={4} />
       </section>
+
+      {/* ── Best Sellers ──────────────────────────────────── */}
+      {allProducts.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-10">
+          <SectionHeader title={t('home.bestsellers')} href="/shop" />
+          <ProductGrid
+            products={[...allProducts].sort((a, b) => (b.reviewCount ?? 0) - (a.reviewCount ?? 0)).slice(0, 4)}
+            cols={4}
+          />
+        </section>
+      )}
+
+      {/* ── Recently Viewed ───────────────────────────────── */}
+      {recentIds.length > 0 && allProducts.some(p => recentIds.includes(p.id)) && (
+        <section className="max-w-7xl mx-auto px-4 py-10">
+          <SectionHeader title={lang === 'ar' ? 'شاهدتها مؤخراً' : 'Recently Viewed'} href="/shop" />
+          <ProductGrid
+            products={recentIds.map(id => allProducts.find(p => p.id === id)).filter(Boolean).slice(0, 4) as Product[]}
+            cols={4}
+          />
+        </section>
+      )}
 
       {/* ── Why Compunil ──────────────────────────────────── */}
       <section className="bg-white border-t border-brand-border">

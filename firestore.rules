@@ -46,6 +46,13 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // ── Coupons (public read for validation, admin write) ─────
+    match /coupons/{couponId} {
+      allow read:   if true;
+      allow update: if isAuth();   // usage counter increment
+      allow create, delete: if isAdmin();
+    }
+
     // ── Hero Slides (public read, admin write) ────────────────
     match /heroSlides/{slideId} {
       allow read:  if true;

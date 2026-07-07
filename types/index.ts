@@ -8,6 +8,7 @@ export type Language = 'en' | 'ar'
 export type UserRole = 'admin' | 'user'   // canonical — never 'customer'
 
 export interface User {
+  savedAddress?: { phone?: string; street?: string; city?: string; governorate?: string }
   id:         string
   name:       string
   email:      string
@@ -191,4 +192,19 @@ export interface HeroSlide {
   active:     boolean
   createdAt?: any
   updatedAt?: any
+}
+
+// ── Coupon ────────────────────────────────────────────────────
+export interface Coupon {
+  id:          string
+  code:        string          // uppercase e.g. SAVE10
+  type:        'percent' | 'fixed'
+  value:       number          // 10 = 10% or 10 EGP
+  minOrder?:   number          // minimum subtotal
+  usageLimit?: number          // 0/undefined = unlimited
+  usedCount?:  number
+  active:      boolean
+  expiresAt?:  any
+  createdAt?:  any
+  updatedAt?:  any
 }

@@ -5,6 +5,7 @@
 
 import { useEffect } from 'react'
 import { useSettingsStore } from '../store/settingsStore'
+import { useCloudSync } from '../hooks/useCloudSync'
 import { Toaster } from 'react-hot-toast'
 import Header     from '../components/layout/Header'
 import Footer     from '../components/layout/Footer'
@@ -39,6 +40,11 @@ function CartMigration() {
   return null
 }
 
+function CloudSync() {
+  useCloudSync()
+  return null
+}
+
 function SettingsLoader() {
   const load = useSettingsStore(s => s.load)
   useEffect(() => { load() }, [load])
@@ -65,6 +71,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <CartMigration />
       <DirSetter />
       <SettingsLoader />
+      <CloudSync />
 
       <Toaster
         position="top-right"

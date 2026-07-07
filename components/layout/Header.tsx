@@ -15,6 +15,9 @@ import { useCartStore }  from '../../store/cartStore'
 import { useAuthStore }  from '../../store/authStore'
 import { useLangStore }  from '../../store/langStore'
 import { useSettingsStore } from '../../store/settingsStore'
+import { getAllProducts } from '../../lib/firestore'
+import { localName } from '../../lib/utils'
+import type { Product } from '../../types'
 import { signOut }       from '../../lib/auth'
 import { cn }            from '../../lib/utils'
 import toast             from 'react-hot-toast'
@@ -22,6 +25,9 @@ import toast             from 'react-hot-toast'
 export default function Header() {
   const router = useRouter()
   const [query, setQuery]                   = useState('')
+  const [suggestions, setSuggestions]       = useState<Product[]>([])
+  const [allProducts, setAllProducts]       = useState<Product[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen]     = useState(false)
   const [scrolled, setScrolled]             = useState(false)
@@ -42,6 +48,25 @@ export default function Header() {
   }, [])
 
   useEffect(() => { setMounted(true) }, [])
+
+  // Load products once for instant search (<2000 products = fine)
+  useEffect(() => {
+    getAllProducts().then(setAllProducts).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (query.trim().length < 2) { setSuggestions([]); return }
+    const q = query.toLowerCase()
+    setSuggestions(
+      allProducts
+        .filter(p =>
+          p.name.toLowerCase().includes(q) ||
+          (p.nameAr ?? '').includes(query) ||
+          (p.brand ?? '').toLowerCase().includes(q)
+        )
+        .slice(0, 6)
+    )
+  }, [query, allProducts])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -112,13 +137,15 @@ export default function Header() {
         </Link>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="order-last md:order-none w-full md:flex-1 md:max-w-2xl md:mx-auto">
+        <form onSubmit={handleSearch} className="order-last md:order-none w-full md:flex-1 md:max-w-2xl md:mx-auto relative">
           <div className="flex items-center bg-gray-50 border-2 border-brand-border rounded-xl overflow-hidden focus-within:border-brand-navy focus-within:bg-white transition-all">
             <input
               ref={inputRef}
               type="text"
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={e => { setQuery(e.target.value); setShowSuggestions(true) }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
               placeholder={t('nav.search')}
               className="flex-1 px-4 py-2.5 bg-transparent text-sm outline-none text-gray-800 placeholder-gray-400"
             />
@@ -126,6 +153,28 @@ export default function Header() {
               <FiSearch size={18} />
             </button>
           </div>
+
+          {/* Instant search suggestions */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute top-full mt-1 w-full bg-white rounded-xl shadow-lg border border-brand-border overflow-hidden z-50">
+              {suggestions.map(p => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onMouseDown={() => { router.push(`/product/${p.id}`); setQuery(''); setShowSuggestions(false) }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 text-start"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-gray-50 overflow-hidden flex-shrink-0">
+                    {p.images?.[0] && <img src={p.images[0]} alt="" className="w-full h-full object-cover" onError={e => (e.currentTarget.style.display='none')} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-brand-navy truncate">{localName(p, lang)}</p>
+                    <p className="text-xs text-brand-teal font-semibold">{p.price.toLocaleString()} {lang === 'ar' ? 'ج.م' : 'EGP'}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </form>
 
         {/* Right actions */}
